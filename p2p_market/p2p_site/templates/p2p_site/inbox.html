@@ -1,0 +1,67 @@
+{% extends "p2p_site/master2.html" %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="{% static 'p2p_site/css/index_style.css' %}">
+<style>
+    .main-container {
+        padding-top: 75px; /* Adjust this value to match the height of your nav bar */
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .inbox-content {
+        width: 100%;
+        max-width: 1200px; /* Or whatever maximum width you prefer */
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .inbox ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .inbox li {
+        margin-bottom: 10px;
+        width: auto;
+    }
+    .inbox a {
+        text-decoration: none;
+        color: #333;
+        padding: 10px;
+        display: block;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+    }
+    .inbox a:hover {
+        background-color: #e0e0e0;
+    }
+</style>
+{% endblock %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+{% include "p2p_site/nav-no-bottom.html" %}
+
+<div class="main-container">
+    <div class="inbox-content">
+        <div class="inbox">
+            <h2>Your Chats</h2>
+            <ul>
+            {% for chat in chats %}
+                <li>
+                    <a href="{% url 'chat_room' chat.id %}">
+                        {% if request.user == chat.buyer %}
+                            Buying {{ chat.product.name }} from {{ chat.seller.business_name }}
+                        {% else %}
+                            {{ chat.buyer.username }} Wants to buy {{ chat.product.name }} from you
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

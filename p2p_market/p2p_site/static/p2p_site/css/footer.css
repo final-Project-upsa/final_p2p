@@ -1,0 +1,30 @@
+.footer {
+    min-height: 15vh;
+    width: 100%;
+    background-color: #344a5b;
+    text-align: center;
+    padding: 30px 0; 
+    position: relative;
+    z-index: 1;
+}
+
+.footer h4 {
+    color: #fff;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+.footer p {
+    color: #fff;
+}
+
+.footer h5 {
+    color: #fff;
+    margin-bottom: 10px;
+    margin-top: 20px;
+    font-weight: 400;
+    text-align: left;
+    margin-left: 20px;
+    font-size: 14px;
+}

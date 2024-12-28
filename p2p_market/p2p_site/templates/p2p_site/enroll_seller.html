@@ -1,0 +1,22 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+
+{% block title %}Add Product{% endblock %}
+{% block style %}
+    .overlay {
+        display : none;
+    }
+
+{% endblock %}
+
+{% block script %}{% endblock %}
+
+ 
+{% block content %}
+<h1>Register as a Seller</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Become a seller</button>
+</form>
+{% endblock %}

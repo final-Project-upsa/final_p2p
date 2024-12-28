@@ -1,0 +1,151 @@
+{% load static %}
+{% load svg_icons %}
+
+<head>
+<link rel="stylesheet" href="{% static 'p2p_site/css/nav-nb.css' %}">
+</head>
+
+<nav>
+    <div class="nav-top">
+        <div class="logo"><span><a href="{% url 'marketplace' %}">TrustTrade</a></span></div>
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="search-query" placeholder="Search..." value="{{ request.GET.q }}">
+                <button onclick="submitSearch()"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="search-suggestions"></div>
+        </div>
+
+        {% if user.is_authenticated and not user.seller %}
+            <a href="{% url 'enroll_seller' %}" class="become-seller">Become a Seller</a>
+        {% endif %}
+
+        <div class="desktop-icons">
+            {% if user.is_authenticated %}
+            <div class="notification-bell">
+                {% svg_icon 'notification' %}
+            </div>
+            <div class="mailbox-icon" id="mailbox-icon">
+                {% svg_icon 'mailbox' %}
+            </div>
+            {% endif %}
+
+            <div class="cart-icon">
+                {% svg_icon 'cart' %}
+            </div>
+
+            {% if user.is_authenticated %}
+                <div class="profile-section desktop-profile">
+                    <div class="profile-content">
+                        {% svg_icon 'user' %}
+                        <div class="profile-info">
+                            <div class="profile-name">Hello, {{ user.username }}</div>
+                            <div class="account-details">Account</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-content">
+                        <div class="dropdown-arrow"></div>
+                        <a href="#account">My Account</a>
+                        <a href="#orders">My Orders</a>
+                        <a href="{% url 'inbox' %}">Inbox</a>
+                        <a href="{% url 'custom_logout' %}">Logout</a>
+                        {% if user.seller.is_approved %}
+                        <a href="{% url 'add_product' %}">Add Product</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="dropdown desktop-profile">
+                    <a href="#" class="dropbtn">{% svg_icon 'user' %}</a>
+                <div class="dropdown-content">
+                    <div class="dropdown-arrow"></div>
+                    <a href="#" data-action="login">Login</a>
+                    <a href="#" data-action="register">Register</a>
+                </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mobile-icons">
+            <div class="search-icon">
+                {% svg_icon 'notification' %}
+            </div>
+            {% if user.is_authenticated %}
+            <div class="notification-bell">
+                {% svg_icon 'notification' %}
+            </div>
+            {% endif %}
+            <div class="cart-icon">
+                {% svg_icon 'cart' %}
+            </div>
+            <div class="profile-icon">
+                {% svg_icon 'user' %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+<!--=====MOBILE ICONS FUNCTIONS=======-->
+<div class="mobile-search-box">
+    <input type="text" placeholder="Search...">
+</div>
+<div class="mobile-profile-dropdown">
+    {% if user.is_authenticated %}
+        <a href="#account">My Account</a>
+        <a href="#orders">My Orders</a>
+        <a href="{% url 'inbox' %}">Inbox</a>
+        {% if user.seller.is_approved %}
+        <a href="{% url 'add_product' %}">Add Product</a>
+        {% endif %}
+        <a href="{% url 'custom_logout' %}">Logout</a>
+        {% if not user.seller %}
+            <a href="{% url 'enroll_seller' %}" class="become-seller">Become a Seller</a>
+        {% endif %}
+    {% else %}
+        <a href="#" data-action="login">Login</a>
+        <a href="#" data-action="register">Register</a>
+    {% endif %}
+</div>
+
+
+
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchIcon = document.querySelector('.search-icon');
+        const profileIcon = document.querySelector('.profile-icon');
+        const mobileSearchBox = document.querySelector('.mobile-search-box');
+        const mobileProfileDropdown = document.querySelector('.mobile-profile-dropdown');
+    
+        {% comment %} searchIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            mobileSearchBox.classList.toggle('active');
+            mobileProfileDropdown.classList.remove('active');
+        }); {% endcomment %}
+    ''
+        profileIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            mobileProfileDropdown.classList.toggle('active');
+            mobileSearchBox.classList.remove('active');
+        });
+    
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.mobile-icons') && !e.target.closest('.mobile-search-box') && !e.target.closest('.mobile-profile-dropdown')) {
+                mobileSearchBox.classList.remove('active');
+                mobileProfileDropdown.classList.remove('active');
+            }
+        });
+    });
+
+    const mailboxIcon = document.getElementById('mailbox-icon');
+        mailboxIcon.addEventListener('click', function() {
+        const inboxUrl = "{% url 'inbox' %}"; 
+        window.location.href = inboxUrl;
+        });
+
+</script>

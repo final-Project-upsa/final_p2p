@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    {% block stylesheet %}
+    {% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <link rel="stylesheet" href="static/p2p_site/css/index_style.css">
+        <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;600;700&display=swap" rel="stylesheet">
+
+    <title>{% block title %}{% endblock %}</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+
+
+{% block style %}
+{% endblock %}
+
+
+
+
+    </style>
+        
+{% block script %}
+{% endblock %}
+
+
+</head>
+<body>
+    
+    {% block content %}
+    {% endblock %}
+</body>
+
+
+</html>

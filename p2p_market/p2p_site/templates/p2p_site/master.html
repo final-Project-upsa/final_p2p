@@ -1,0 +1,278 @@
+{% load static %}
+{% load svg_icons %}
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    {% block stylesheet %}
+    {% endblock %}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <link rel="stylesheet" href="{% static 'p2p_site/css/index_style.css' %}">
+        <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;600;700&display=swap" rel="stylesheet">
+
+    <title>{% block title %}{% endblock %}</title>
+     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+
+
+
+    <style type="text/css">
+        .error-message {
+            display: none;
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+       
+{% block style %}
+{% endblock %}
+
+
+
+
+    </style>
+        
+{% block script %}
+{% endblock %}
+
+
+</head>
+<body>
+    
+    {% block content %}
+
+    {% endblock %}
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--===LOGIN AND REGISTER OVERLAY=====-->
+<div id="auth-overlay" class="overlay">
+	<div class="overlay-content">
+	  <section class="login" id="login-section">
+		
+		<div class="session">
+			<div class="close-btn"><span >&times;</span></div>
+
+
+
+
+<!--========REGISTER=======-->
+
+		    <form class="register" id="register-form" style="display:none;" autocomplete="off" action="{% url 'register' %}" method="post">
+                <div class="error-message"></div>
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <h4>Create your <span>TrustTrade</span> account</h4>
+                <p>Join us today! Fill in the details to create your account:</p>
+                <div class="floating-label">
+                    <input class="form-input" placeholder="username" type="username" name="username" id="username" autocomplete="off">
+                    <label for="username">Username:</label>
+                    <div class="icon">
+                        {% svg_icon 'username' %}
+                    </div>
+                </div>
+                <div class="floating-label">
+                    <input class="form-input" placeholder="Phone" type="tel" name="phone_number" id="phone_number" autocomplete="off">
+                    <label for="phone">Phone:</label>
+                    <div class="icon">
+                        {% svg_icon 'phone' %}
+                    </div>
+                </div>
+                <div class="floating-label">
+                    <input class="form-input" placeholder="Email" type="email" name="email" id="email" autocomplete="off">
+                    <label for="email">Email:</label>
+                    <div class="icon">
+                        {% svg_icon 'email' %}
+                    </div>
+                </div>
+                <div class="floating-label">
+                    <input class="form-input" placeholder="Region" type="text" name="region" id="region" autocomplete="off">
+                    <label for="region">Region:</label>
+                    <div class="icon">
+                        {% svg_icon 'location' %}
+                    </div>
+                </div>
+                <div class="floating-label">
+                    <input  class="form-input" placeholder="password" type="password" name="password1" id="password1" autocomplete="off">
+                    <label for="password">Password:</label>
+                    <div class="icon">
+                        {% svg_icon 'password' %}
+                    </div>
+                </div>
+                <div class="floating-label">
+                    <input class="form-input" placeholder="confirm password" type="password" name="password2" id="password2" autocomplete="off">
+                    <label for="password">confirm password:</label>
+                    <div class="icon">
+                        {% svg_icon 'password' %}
+                    </div>
+                </div>
+
+                <button class="for-form" type="submit" value="register">REGISTER</button>
+                <a href="#login" class="discrete" id="login-link">Already have an account? Click here to login</a>
+            </form>
+            
+		</div>
+		
+	  </section>
+	</div>
+  </div>
+
+
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('auth-overlay');
+        var loginForm = document.getElementById('login-form');
+        var registerForm = document.getElementById('register-form');
+        var closeBtn = document.querySelector('.close-btn');
+    
+        function showLogin() {
+            overlay.style.display = 'block';
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+        }
+    
+        function showRegister() {
+            overlay.style.display = 'block';
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        }
+    
+        function closeOverlay() {
+            overlay.style.display = 'none';
+        }
+    
+        // Close button
+        closeBtn.onclick = closeOverlay;
+    
+        // Close overlay when clicking outside
+        window.onclick = function(event) {
+            if (event.target == overlay) {
+                closeOverlay();
+            }
+        }
+    
+        // Show login overlay for any login link on the page
+        document.body.addEventListener('click', function(event) {
+            if (event.target.getAttribute('data-action') === 'login') {
+                event.preventDefault();
+                showLogin();
+            } else if (event.target.getAttribute('data-action') === 'register') {
+                event.preventDefault();
+                showRegister();
+            }
+        });
+    
+        // Switch between login and register forms
+        document.getElementById('login-link').onclick = function(e) {
+            e.preventDefault();
+            showLogin();
+        }
+    
+        document.getElementById('register-link').onclick = function(e) {
+            e.preventDefault();
+            showRegister();
+        }
+    
+        // Handle form submissions
+        loginForm.addEventListener('submit', handleFormSubmit);
+        registerForm.addEventListener('submit', handleFormSubmit);
+    
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            var form = e.target;
+            var formData = new FormData(form);
+    
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                var errorDiv = form.querySelector('.error-message');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'error-message';
+                    form.insertBefore(errorDiv, form.firstChild);
+                }
+    
+                if (data.status === 'error') {
+                    // Display error message
+                    errorDiv.textContent = data.message;
+                    errorDiv.style.display = 'block';
+                } else if (data.status === 'success') {
+                    // Hide error message if it was previously shown
+                    errorDiv.style.display = 'none';
+                    // Redirect on success
+                    window.location.href = data.redirect;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    
+    
+        // Check URL parameters for login or register
+        var urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('login') !== null || window.location.pathname.includes('login')) {
+            showLogin();
+        } else if (urlParams.get('register') !== null || window.location.pathname.includes('register')) {
+            showRegister();
+        }
+    
+        // Check if we need to show a form on page load due to messages
+        {% if messages %}
+            overlay.style.display = 'block';
+            
+            {% if show_login_form %}
+                showLogin();
+            {% elif show_register_form %}
+                showRegister();
+            {% endif %}
+        {% endif %}
+    });
+    </script>
+
+
+</html>

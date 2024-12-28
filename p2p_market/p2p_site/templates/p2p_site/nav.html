@@ -1,0 +1,396 @@
+{% load static %}
+{% load svg_icons %}
+
+
+<head>
+<link rel="stylesheet" href="{% static 'p2p_site/css/nav.css' %}">
+</head>
+
+
+
+
+<nav>
+    <div class="nav-top">
+        <div class="logo"><span><a href="{% url 'marketplace' %}">TrustTrade</a></span></div>
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="search-query" placeholder="Search..." value="{{ request.GET.q }}">
+                <button onclick="submitSearch()"><i class="fas fa-search"></i></button>
+            </div>
+            <div id="search-suggestions"></div>
+        </div>
+
+        {% if user.is_authenticated and not user.seller %}
+            <a href="{% url 'enroll_seller' %}" class="become-seller">Become a Seller</a>
+        {% endif %}
+
+        <div class="desktop-icons">
+            {% if user.is_authenticated %}
+            <div class="notification-bell">
+                {% svg_icon 'notification' %}
+            </div>
+            <div class="mailbox-icon" id="mailbox-icon">
+                {% svg_icon 'mailbox' %}
+            </div>
+            {% endif %}
+
+            <div class="cart-icon">
+                {% svg_icon 'cart' %}
+            </div>
+
+            {% if user.is_authenticated %}
+                <div class="profile-section desktop-profile">
+                    <div class="profile-content">
+                        {% svg_icon 'user' %}
+                        <div class="profile-info">
+                            <div class="profile-name">Hello, {{ user.username }}</div>
+                            <div class="account-details">Account</div>
+                        </div>
+                    </div>
+                    <div class="dropdown-content">
+                        <div class="dropdown-arrow"></div>
+                        <a href="#account">My Account</a>
+                        <a href="#orders">My Orders</a>
+                        <a href="{% url 'inbox' %}">Inbox</a>
+                        <a href="{% url 'custom_logout' %}">Logout</a>
+                        {% if user.seller.is_approved %}
+                        <a href="{% url 'add_product' %}">Add Product</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="dropdown desktop-profile">
+                    <a href="#" class="dropbtn">{% svg_icon 'user' %}</a>
+                <div class="dropdown-content-nb">
+                    <div class="dropdown-arrow"></div>
+                    <a href="#" data-action="login">Login</a>
+                    <a href="#" data-action="register">Register</a>
+                </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="mobile-icons">
+            <div class="search-icon">
+                {% svg_icon 'search' %}
+            </div>
+            {% if user.is_authenticated %}
+            <div class="notification-bell">
+                {% svg_icon 'notification' %}
+            </div>
+            {% endif %}
+            <div class="cart-icon">
+                {% svg_icon 'cart' %}
+            </div>
+            <div class="profile-icon">
+                {% svg_icon 'user' %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="nav-bottom">
+        <ul>
+            <li><a href="#today-deals">Today's Deals</a></li>
+            <li><a href="#new-arrivals">New Arrivals</a></li>
+            <li><a href="#best-sellers">Best Sellers</a></li>
+            <li><a href="#electronics">Electronics</a></li>
+            <li><a href="#fashion">Fashion</a></li>
+            <li><a href="#home-garden">Home & Garden</a></li>
+        </ul>
+    </div>
+</nav>
+
+
+
+
+<div class="favorites-dropdown" id="favorites-dropdown">
+    <div class="favorites-dropdown-header">
+        <h3>Your Favorites</h3>
+        <span class="close-dropdown">&times;</span>
+    </div>
+
+    <div class="favorites-dropdown-content" id="favorites-content">
+        <!-- This will be populated dynamically -->
+    </div>
+
+    <div class="favorites-dropdown-footer">
+        <a href="{% url 'all_favorites' %}" class="view-all-favorites">View All Favorites</a>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class="mobile-search-box">
+    <input type="text" id="mobile-search-query" placeholder="Search..." value="{{ request.GET.q }}">
+    <div id="mobile-search-suggestions"></div>
+</div>
+<div class="mobile-profile-dropdown">
+    {% if user.is_authenticated %}
+        <a href="#account">My Account</a>
+        <a href="#orders">My Orders</a>
+        <a href="{% url 'inbox' %}">Inbox</a>
+        {% if user.seller.is_approved %}
+        <a href="{% url 'add_product' %}">Add Product</a>
+        {% endif %}
+        <a href="{% url 'custom_logout' %}">Logout</a>
+        {% if not user.seller %}
+            <a href="{% url 'enroll_seller' %}" class="become-seller">Become a Seller</a>
+        {% endif %}
+    {% else %}
+        <a href="#" data-action="login">Login</a>
+        <a href="#" data-action="register">Register</a>
+    {% endif %}
+</div>
+
+
+<script src="{% static 'p2p_site/js/live-search.js' %}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cart item count
+        let cartItemCount = 0;
+        const cartItemCountElements = document.querySelectorAll('.cartItemCount');
+    
+        function updateCartItemCount(count) {
+            cartItemCount = count;
+            cartItemCountElements.forEach(element => {
+                element.textContent = cartItemCount;
+            });
+        }
+    
+        // Function to show popup
+        function showPopup(message) {
+            const popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.textContent = message;
+            document.body.appendChild(popup);
+            
+            setTimeout(() => {
+                popup.style.display = 'block';
+            }, 100);
+        
+            setTimeout(() => {
+                popup.style.display = 'none';
+                setTimeout(() => {
+                    popup.remove();
+                }, 500);
+            }, 2000);
+        }
+    
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        function loadFavorites() {
+            fetch('/api/get_user_favourites')  
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        populateFavoritesDropdown(data.favourites);
+                    } else {
+                        console.error('Failed to load favorites:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    
+        function populateFavoritesDropdown(favoriteIds) {
+            const content = document.getElementById('favorites-content');
+            content.innerHTML = ''; // Clear existing content
+    
+            if (favoriteIds.length === 0) {
+                content.innerHTML = '<p>Your favorites list is empty.</p>';
+                return;
+            }
+    
+            // Fetch details for each favorite product
+            const fetchPromises = favoriteIds.map(id => 
+                fetch(`/api/get_product_details/${id}`)  
+                    .then(response => response.json())
+            );
+    
+            Promise.all(fetchPromises)
+                .then(products => {
+                    products.forEach(product => {
+                        if (product.success) {
+                            const productHtml = `
+                                <div class="cart-item" data-product-id="${product.id}">
+                                    <img src="${product.main_image_url}" alt="${product.name}" class="cart-item-image">
+                                    <div class="cart-item-details">
+                                        <h4>${product.name}</h4>
+                                        <p>₵${product.price.toFixed(2)}</p>
+                                    </div>
+                                    <div class="cart-item-actions">
+                                        ${product.is_seller ? 
+                                            `<button class="buy-now-btn">View Product</button>` : 
+                                            `<button class="buy-now-btn" data-seller-id="${product.seller_id}" data-product-id="${product.id}">Buy Now</button>`
+                                        }
+                                        <button class="remove-favorite" data-product-id="${product.id}">
+                                            {% svg_icon 'trash' %}
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            content.innerHTML += productHtml;
+                        }
+                    });
+                    addFavoriteButtonListeners();
+                })
+                .catch(error => console.error('Error fetching product details:', error));
+        }
+    
+        function addFavoriteButtonListeners() {
+            // Buy Now button listener
+            document.querySelectorAll('.favorites-dropdown .buy-now-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sellerId = this.dataset.sellerId;
+                    const productId = this.dataset.productId;
+                    if (sellerId && productId) {
+                        window.location.href = `/create_chat/${sellerId}/${productId}/`;
+                    } else {
+                        // Handle "View Product" case
+                        const productId = this.closest('.cart-item').dataset.productId;
+                        window.location.href = `/product/${productId}/`;
+                    }
+                });
+            });
+    
+            // Remove button listener
+            document.querySelectorAll('.favorites-dropdown .remove-favorite').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productId = this.dataset.productId;
+                    removeFavorite(productId);
+                });
+            });
+        }
+    
+        function removeFavorite(productId) {
+            fetch('/api/save_favourite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    isFavourite: false
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the item from the dropdown
+                    const itemToRemove = document.querySelector(`.cart-item[data-product-id="${productId}"]`);
+                    if (itemToRemove) {
+                        itemToRemove.remove();
+                    }
+                    // Update the favorite count
+                    updateCartItemCount(data.newCount);
+                    // Show a success message
+                    showPopup(data.message);
+                    // Update the UI to reflect the removed favorite
+                    updateHeartIcons(productId, false);
+                } else {
+                    console.error('Failed to remove item from favorites');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    
+        function updateHeartIcons(productId, isFavorite) {
+            // Update heart icons in the main UI
+            const heartButtons = document.querySelectorAll(`.heart-btn[data-product-id="${productId}"]`);
+            heartButtons.forEach(button => {
+                if (isFavorite) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+    
+        // Mobile menu functionality
+        const searchIcon = document.querySelector('.search-icon');
+        const profileIcon = document.querySelector('.profile-icon');
+        const mobileSearchBox = document.querySelector('.mobile-search-box');
+        const mobileProfileDropdown = document.querySelector('.mobile-profile-dropdown');
+    
+        searchIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            mobileSearchBox.classList.toggle('active');
+            mobileProfileDropdown.classList.remove('active');
+        });
+    
+        profileIcon.addEventListener('click', function(e) {
+            e.preventDefault();
+            mobileProfileDropdown.classList.toggle('active');
+            mobileSearchBox.classList.remove('active');
+        });
+    
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.mobile-icons') && !e.target.closest('.mobile-search-box') && !e.target.closest('.mobile-profile-dropdown')) {
+                mobileSearchBox.classList.remove('active');
+                mobileProfileDropdown.classList.remove('active');
+            }
+        });
+    
+        // Mailbox icon functionality
+        const mailboxIcon = document.getElementById('mailbox-icon');
+        mailboxIcon.addEventListener('click', function() {
+            const inboxUrl = "{% url 'inbox' %}"; 
+            window.location.href = inboxUrl;
+        });
+    
+        // Cart/Favorites Dropdown functionality
+        const cartIcon = document.querySelectorAll('.cart-icon');
+        const favoritesDropdown = document.getElementById('favorites-dropdown');
+    
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.cart-icon') && !e.target.closest('#favorites-dropdown')) {
+                favoritesDropdown.classList.remove('active');
+            }
+        });
+    
+        const closeButton = document.querySelector('.close-dropdown');
+        if (closeButton) {
+            closeButton.addEventListener('click', function() {
+                favoritesDropdown.classList.remove('active');
+            });
+        }
+    
+        // Call this function when the favorites icon is clicked
+        document.querySelector('.cart-icon').addEventListener('click', function(e) {
+            e.preventDefault();
+            loadFavorites();
+            favoritesDropdown.classList.toggle('active');
+        });
+    
+        // Initial load of user favorites
+        loadFavorites();
+    });
+
+</script>

@@ -1,0 +1,151 @@
+{% load i18n %}
+
+{% block subject %}
+{% blocktrans %}Welcome to TrustTrade - Activate Your Account{% endblocktrans %}
+{% endblock subject %}
+
+{% block html_body %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #111827;
+            margin: 0;
+            padding: 0;
+            background-color: #EBF4FF;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #EBF8FF 0%, #E0E7FF 100%);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #E5E7EB;
+            border-bottom: none;
+        }
+        .header h1 {
+            color: #111827;
+            margin: 0;
+            font-size: 24px;
+        }
+        .header span {
+            color: #2563EB;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 30px 20px;
+            border: 1px solid #E5E7EB;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #2563EB;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #1D4ED8;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+        .welcome-text {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+            color: #111827;
+        }
+        .brand {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        .divider {
+            height: 1px;
+            background-color: #E5E7EB;
+            margin: 20px 0;
+        }
+        .link-text {
+            background-color: #F3F4F6;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            word-break: break-all;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="brand">Trust<span>Trade</span></div>
+            <h1>{% trans "Welcome to Your Trading Journey!" %}</h1>
+        </div>
+        
+        <div class="content">
+            <h2 class="welcome-text">{% trans "Almost there!" %}</h2>
+            
+            <p>{% blocktrans %}Hi, {{ user.username}} Thank you for choosing TrustTrade. We're excited to help you start your trading journey!{% endblocktrans %}</p>
+            
+            <p>{% trans "To begin trading, please activate your account by clicking the button below:" %}</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ protocol }}://{{ domain }}/{{ url|safe }}" class="button">
+                    {% trans "Activate Your Account" %}
+                </a>
+            </div>
+            
+            <p style="font-size: 0.875rem; color: #6B7280;">{% trans "Or copy and paste this link into your browser:" %}</p>
+            <div class="link-text">
+                {{ protocol }}://{{ domain }}/{{ url|safe }}
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p style="font-size: 0.875rem; color: #6B7280;">
+                {% trans "For security reasons, this activation link will expire in 24 hours. If you didn't request this email, you can safely ignore it." %}
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>{% blocktrans %}Best regards,<br>The TrustTrade Team{% endblocktrans %}</p>
+            <p style="font-size: 0.75rem; color: #9CA3AF;">
+                {% trans "This is an automated message, please do not reply to this email." %}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}
+
+{% block text_body %}
+{% blocktrans %}Welcome to TrustTrade!{% endblocktrans %}
+
+{% blocktrans %}Thank you for choosing TrustTrade. We're excited to help you start your trading journey!{% endblocktrans %}
+
+{% trans "To begin trading, please activate your account by visiting this link:" %}
+{{ protocol }}://{{ domain }}/{{ url|safe }}
+
+{% trans "For security reasons, this activation link will expire in 24 hours. If you didn't request this email, you can safely ignore it." %}
+
+{% blocktrans %}Best regards,
+The TrustTrade Team{% endblocktrans %}
+{% endblock text_body %}

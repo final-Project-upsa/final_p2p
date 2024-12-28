@@ -1,0 +1,88 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+
+{% block style %}
+    .product-detail {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-detail img {
+        max-width: 100%;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .product-detail h1 {
+        margin-bottom: 10px;
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .product-detail p {
+        font-size: 18px;
+        color: #777;
+        text-align: center;
+    }
+
+    .product-images {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .product-images img {
+        width: 100px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .product-images img:hover {
+        transform: scale(1.1);
+    }
+
+    .overlay {
+        display: none;
+    }
+{% endblock %}
+
+{% block script %}{% endblock %}
+
+ 
+{% block content %}
+
+<div class="product-detail">
+    <h1>{{ product.name }}</h1>
+    <img src="{{ product.main_image.url }}" alt="{{ product.name }}">
+
+    <p>{{ product.description }}</p>
+    <p>Price: ${{ product.price }}</p>
+
+    <div class="product-images">
+        {% if product.image1 %}
+            <img src="{{ product.image1.url }}" alt="Image 1">
+        {% endif %}
+        {% if product.image2 %}
+            <img src="{{ product.image2.url }}" alt="Image 2">
+        {% endif %}
+        {% if product.image3 %}
+            <img src="{{ product.image3.url }}" alt="Image 3">
+        {% endif %}
+        {% if product.image4 %}
+            <img src="{{ product.image4.url }}" alt="Image 4">
+        {% endif %}
+        {% if product.image5 %}
+            <img src="{{ product.image5.url }}" alt="Image 5">
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

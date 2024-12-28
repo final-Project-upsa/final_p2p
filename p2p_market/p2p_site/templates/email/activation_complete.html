@@ -1,0 +1,170 @@
+{% load i18n %}
+
+{% block subject %}
+{% blocktrans %}TrustTrade - Account Successfully Activated{% endblocktrans %}
+{% endblock subject %}
+
+{% block html_body %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #111827;
+            margin: 0;
+            padding: 0;
+            background-color: #EBF4FF;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #EBF8FF 0%, #E0E7FF 100%);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            border: 1px solid #E5E7EB;
+            border-bottom: none;
+        }
+        .header h1 {
+            color: #111827;
+            margin: 0;
+            font-size: 24px;
+        }
+        .header span {
+            color: #2563EB;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 30px 20px;
+            border: 1px solid #E5E7EB;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .success-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #2563EB;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 600;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #1D4ED8;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6B7280;
+            font-size: 0.875rem;
+        }
+        .brand {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        .success-message {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 0;
+            color: #059669;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .feature-item {
+            background-color: #F3F4F6;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .divider {
+            height: 1px;
+            background-color: #E5E7EB;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="brand">Trust<span>Trader</span></div>
+            <h1>{% trans "Account Activated!" %}</h1>
+        </div>
+        
+        <div class="content">
+            <div style="text-align: center;">
+                <div class="success-icon">✅</div>
+                <h2 class="success-message">{% trans "Welcome to TrustTrade!" %}</h2>
+                
+                <p>{% trans "Your account has been successfully activated. You're now ready to start your trading journey." %}</p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h3>{% trans "Trade" %}</h3>
+                    <p>{% trans "Access markets and start trading" %}</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <h3>{% trans "Monitor" %}</h3>
+                    <p>{% trans "Track your portfolio in real-time" %}</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ protocol }}://{{ domain }}/login" class="button">
+                    {% trans "Start Trading Now" %}
+                </a>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p style="font-size: 0.875rem; color: #6B7280; text-align: center;">
+                {% trans "Need help getting started? Check out our comprehensive guide in the Help Center." %}
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>{% blocktrans %}Happy Trading!<br>The TrustTrade Team{% endblocktrans %}</p>
+            <p style="font-size: 0.75rem; color: #9CA3AF;">
+                {% trans "This is an automated message, please do not reply to this email." %}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}
+
+{% block text_body %}
+{% blocktrans %}Welcome to TrustTrade!{% endblocktrans %}
+
+{% trans "Your account has been successfully activated. You're now ready to start your trading journey." %}
+
+{% trans "To begin trading, please visit:" %}
+{{ protocol }}://{{ domain }}/login
+
+{% blocktrans %}Happy Trading!
+The TrustTrade Team{% endblocktrans %}
+{% endblock text_body %}

@@ -1,0 +1,17 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+
+{% block title %}MarketPlace{% endblock %}
+{% block style %}
+
+{% endblock %}
+
+
+
+ 
+{% block content %}
+
+<script>
+    
+</script>
+{% endblock %}

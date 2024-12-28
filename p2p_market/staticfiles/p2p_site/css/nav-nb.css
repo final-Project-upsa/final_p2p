@@ -1,0 +1,444 @@
+        /* Navigation Bar */
+        nav {
+            background-color: #f0f0f0;
+            color: #000;
+            padding: 10px 20px 5px 20px;
+            position: fixed;
+            z-index: 1000;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+    
+        nav .logo span a {
+            font-size: 24px;
+            font-weight: 900;
+            color: #000;
+            margin-right: 40px;
+            text-decoration: none;
+        }
+    
+    
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 20px;
+            padding: 5px 10px;
+            margin: 0 20px;
+            flex-grow: 1;
+            max-width: 545px;
+            border: 1px solid;
+        }
+    
+        .search-bar input {
+            border: none;
+            outline: none;
+            padding: 5px;
+            width: 100%;
+        }
+    
+        .search-bar button {
+            background-color: transparent;
+            color: #333;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+    
+        .mobile-search-box {
+            display: none;
+            position: fixed;
+            top: 54px; 
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1001;
+        }
+    
+        .mobile-search-box.active {
+            display: block;
+            padding-right: 33px;
+            width: auto;
+            margin: 8px;
+            border-radius: 11px;
+        }
+    
+        .mobile-search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    
+        .profile-section {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            cursor: pointer;
+        }
+    
+        .profile-content {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+    
+        .profile-name {
+            margin: 0;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+    
+        .username {
+            display: inline-block;
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    
+        .become-seller {
+            color: #fff;
+            text-decoration: none;
+            background-color: #1a90f5;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+    
+        .become-seller:hover {
+            background-color: #1a90f5;
+        }
+    
+        .notification-bell{
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            margin: auto;
+            right: 2px;
+        }
+    
+        .cart-icon {
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            right: 2px;
+            margin: auto;
+        }
+    
+        .mailbox-icon {
+            font-size: 24px;
+            cursor: pointer;
+            position: relative;
+            right: 2px;
+            margin: auto;
+        }
+    
+        .mobile-icons {
+            display: none;
+        }
+    
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+    
+        .dropbtn {
+            background-color: transparent;
+            color: #000;
+            padding: 5px 0;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+    
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+    
+        .dropdown-arrow {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #f9f9f9;
+            position: absolute;
+            top: -10px;
+            right: 20px;
+        }
+    
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s;
+        }
+    
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+    
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+    
+        .dropdown:hover .dropbtn {
+            color: #2196F3;
+        }
+    
+        /* Responsive design */
+    @media screen and (max-width: 768px) {
+        nav {
+            padding: 10px;
+            height: auto;
+        }
+    
+        .nav-top {
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            height: 44px;
+        }
+    
+        .logo {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+    
+    
+        .search-bar {
+            display: none;
+        }
+    
+        .profile-section, .become-seller {
+            display: none;
+        }
+    
+        .dropdown {
+            position: static;
+            display: block;
+        }
+        .dropdown-content {
+            position: fixed;
+            top: 54px; /* Adjust based on your nav height */
+            left: 0;
+            right: 0;
+            width: 100%;
+            display: none;
+            z-index: 1001;
+        }
+        .dropdown-arrow {
+            display: none;
+        }
+    
+        .notification-bell{
+            margin-left: auto;
+        }
+    
+        .cart-icon {
+            margin-left: auto;
+        }
+    
+        .mobile-icons {
+            display: flex;
+            align-items: center;
+        }
+    
+        .search-icon, .profile-icon {
+            font-size: 20px;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+    
+        .nav-right {
+            display: flex;
+            align-items: center;
+        }
+    
+        .menu-icon, .search-icon, .profile-icon {
+            font-size: 20px;
+            margin-left: 15px;
+            cursor: pointer;
+        }
+    
+    
+    }
+    
+        .account-details{
+            margin: auto;
+            font-size: 13px;
+        }
+    
+        .mobile-profile-dropdown {
+            display: none;
+            position: fixed;
+            top: 54px; /* Adjust based on your nav height */
+            left: unset;
+            right: 0;
+            background-color: #f9f9f9;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
+    
+        .mobile-profile-dropdown.active {
+            display: block;
+            padding: 6px;
+            width: 150px;
+            margin: 8px;
+            border-radius: 11px;
+            position: fixed;
+            top: 54px; /* Adjust based on your nav height */
+            right: 0;
+            background-color: #f9f9f9;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1001;
+            border-radius: 5px;
+            width: 150px;
+        }
+    
+        .mobile-profile-dropdown.active::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            right: 10px; /* Align with the profile icon, adjust as needed */
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #f9f9f9;
+        }
+    
+        .mobile-profile-dropdown a {
+            color: black;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: block;
+            border-bottom: 1px solid #e0e0e0;
+        }
+    
+        .mobile-profile-dropdown a:last-child {
+            border-bottom: none;
+        }
+    
+        .mobile-profile-dropdown a:hover {
+            background-color: #f1f1f1;
+        }
+    
+        @media screen and (max-width: 768px) {
+            .desktop-profile {
+                display: none;
+            }
+    
+            .mobile-icons {
+                display: flex;
+            }
+        }
+    
+        @media screen and (min-width: 769px) {
+            .mobile-profile-dropdown {
+                display: none !important;
+            }
+        }
+    
+        @media screen and (max-width: 768px) {
+            .nav-top {
+                position: relative;
+            }
+    
+            .mobile-icons {
+                position: relative;
+            }
+        }
+    
+        @media screen and (min-width: 769px) {
+            .mobile-profile-dropdown {
+                display: none !important;
+            }
+        }
+        
+        .profile-info {
+            display: flex;
+            flex-direction: column;
+        }
+    
+        .profile-section:hover .dropdown-content {
+            display: block;
+        }
+
+
+
+/*==================================================================================*/
+/*=============================================================*/
+
+.desktop-icons {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+.mobile-icons {
+    display: none;
+}
+
+@media screen and (max-width: 768px) {
+    .nav-top {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        height: 44px;
+    }
+
+    .logo {
+        font-size: 20px;
+        margin-right: 10px;
+    }
+
+    .search-bar, .desktop-icons, .become-seller {
+        display: none;
+    }
+
+    .mobile-icons {
+        display: flex;
+        align-items: center;
+    }
+
+    .mobile-icons > div {
+        font-size: 20px;
+        margin-left: 15px;
+        cursor: pointer;
+    }
+
+    .mobile-icons .search-icon,
+    .mobile-icons .cart-icon,
+    .mobile-icons .profile-icon {
+        display: block;
+    }
+
+    .mobile-icons .notification-bell {
+        display: none;
+    }
+
+    body.user-authenticated .mobile-icons .notification-bell {
+        display: block;
+    }
+}
+

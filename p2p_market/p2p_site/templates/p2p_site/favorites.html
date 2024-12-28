@@ -1,0 +1,52 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+{% load svg_icons %}
+
+{% block title %}All Favorites{% endblock %}
+
+{% block content %}
+{% include "p2p_site/nav.html" %}
+
+<div class="main-content">
+    <h2>All Favorites</h2>
+    <div class="product-grid">
+        {% for product in favorites %}
+        <div class="product-item">
+            <a class="item-a" href="{% url 'product_detail' product.pk %}">
+                <img class="product-image" src="{{ product.main_image.url }}" alt="{{ product.name }}">
+                <div class="price-seller">
+                    <p class="price">
+                        ₵{{ product.price|floatformat:2|slice:":-3" }}<sup>.{{ product.price|floatformat:2|slice:"-2:" }}</sup>
+                    </p>
+                    <div class="seller">
+                        <a href="{% url 'seller_shop' product.seller.business_name %}">
+                            {% if product.seller.profile_photo %}
+                                <img src="{{ product.seller.profile_photo.url }}" alt="{{ product.seller.business_name }}">
+                            {% else %}
+                                <img src="{% static 'p2p_site/images/default_profile.png' %}" alt="Default Profile">
+                            {% endif %}
+                            <h5>{{ product.seller.business_name }}</h5>
+                        </a>
+                    </div>
+                </div>
+                <h3>{{ product.name }}</h3>
+            </a>
+            <div class="product-actions">
+                <button class="heart-btn active" data-product-id="{{ product.id }}">
+                    {% svg_icon 'heart' %}
+                </button>
+                {% if user != product.seller.user %}
+                <button class="buy-now-btn" data-seller-id="{{ product.seller.id }}" data-product-id="{{ product.id }}">Buy Now</button>
+                {% else %}
+                <button class="buy-now-btnn">View Product</button>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+            <p>No favorites yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% include "p2p_site/footer.html" %}
+{% endblock %}

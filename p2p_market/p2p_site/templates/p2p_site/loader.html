@@ -1,0 +1,111 @@
+{% load static %}
+
+<head>
+    <style>
+        .add-product-loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); 
+            z-index: 1000;
+        }
+        .loader-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .loader-text {
+            color: white;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .container {
+            --uib-size: 40px;
+            --uib-color: #2196F3; 
+            --uib-speed: .9s;
+            position: relative;
+            height: calc(var(--uib-size) / 2);
+            width: var(--uib-size);
+            filter: url('#uib-jelly-ooze');
+            animation: rotate calc(var(--uib-speed) * 2) linear infinite;
+            will-change: transform;
+            margin: auto;
+        }
+        .container::before,
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0%;
+            left: 25%;
+            width: 50%;
+            height: 100%;
+            background-color: var(--uib-color);
+            border-radius: 100%;
+            will-change: transform;
+            transition: background-color 0.3s ease;
+        }
+        .container::before {
+            animation: shift-left var(--uib-speed) ease infinite;
+        }
+        .container::after {
+            animation: shift-right var(--uib-speed) ease infinite;
+        }
+        .svg {
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        @keyframes rotate {
+            0%, 49.999%, 100% { transform: none; }
+            50%, 99.999% { transform: rotate(90deg); }
+        }
+        @keyframes shift-left {
+            0%, 100% { transform: translateX(0%); }
+            50% { transform: scale(0.65) translateX(-75%); }
+        }
+        @keyframes shift-right {
+            0%, 100% { transform: translateX(0%); }
+            50% { transform: scale(0.65) translateX(75%); }
+        }
+    </style>
+</head>
+
+
+<div class="add-product-loader">
+    <div class="loader-container">
+        <div class="container"></div>
+        <p class="loader-text">This might take a while, please wait...</p>
+    </div>
+</div>
+
+<svg width="0" height="0" class="svg">
+    <defs>
+        <filter id="uib-jelly-ooze">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="ooze" />
+            <feBlend in="SourceGraphic" in2="ooze" />
+        </filter>
+    </defs>
+</svg>
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const loader = document.querySelector('.add-product-loader');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            loader.style.display = 'block';
+            form.submit();
+        });
+    });
+</script>
+
+

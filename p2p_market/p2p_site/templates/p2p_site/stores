@@ -1,0 +1,159 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+
+{% block stylesheet %} <link rel="stylesheet" href="static/p2p_site/css/marketplace_style.css"> {% endblock %}
+{% block title %}MarketPlace{% endblock %}
+
+{% block content %}
+<nav>
+    <div class="nav-top">
+        <div class="logo"><span>TrustTrade</span></div>
+        <div class="search-bar">
+            <input type="text" placeholder="Search...">
+            <button type="submit"><i class="fas fa-search"></i></button>
+        </div>
+        {% if user.is_authenticated %}
+            <div class="profile-section desktop-profile">
+                <div class="profile-name">Hello, {{ user.username }}</div>
+                <div class="dropdown">
+                    <a href="#" class="dropbtn">Account Details</a>
+                    <div class="dropdown-content">
+                        <div class="dropdown-arrow"></div>
+                        <a href="#account">My Account</a>
+                        <a href="#orders">My Orders</a>
+                        <a href="{% url 'custom_logout' %}">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <a href="#be-seller" class="become-seller">Become a Seller</a>
+        {% else %}
+            <div class="dropdown desktop-profile">
+                <a href="#" class="dropbtn">Account</a>
+                <div class="dropdown-content">
+                    <div class="dropdown-arrow"></div>
+                    <a href="#login">Login</a>
+                    <a href="#register">Register</a>
+                </div>
+            </div>
+        {% endif %}
+        <div class="cart-icon">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="mobile-icons">
+            <i class="fas fa-search search-icon"></i>
+            <i class="fas fa-user profile-icon"></i>
+        </div>
+    </div>
+    <div class="nav-bottom">
+        <ul>
+            <li><a href="#today-deals">Today's Deals</a></li>
+            <li><a href="#new-arrivals">New Arrivals</a></li>
+            <li><a href="#best-sellers">Best Sellers</a></li>
+            <li><a href="#electronics">Electronics</a></li>
+            <li><a href="#fashion">Fashion</a></li>
+            <li><a href="#home-garden">Home & Garden</a></li>
+        </ul>
+    </div>
+</nav>
+<div class="mobile-search-box">
+    <input type="text" placeholder="Search...">
+</div>
+<div class="mobile-profile-dropdown">
+    {% if user.is_authenticated %}
+        <a href="#account">My Account</a>
+        <a href="#orders">My Orders</a>
+        <a href="{% url 'custom_logout' %}">Logout</a>
+    {% else %}
+        <a href="#login">Login</a>
+        <a href="#register">Register</a>
+    {% endif %}
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="sidebar">
+        <h3>Categories</h3>
+        <ul>
+            <li><a href="#">Electronics</a></li>
+            <li><a href="#">Clothing</a></li>
+            <li><a href="#">Home & Garden</a></li>
+        </ul>
+    </div>
+    <!-- Product Listings -->
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-item"> 
+            <a href="{% url 'product_detail' product.pk %}">
+                <img src="{{ product.main_image.url }}" alt="{{ product.name }}">
+                <div class="price-seller">
+                    <p class="price">
+                        ${{ product.price|floatformat:2|slice:":-3" }}<sup>.{{ product.price|floatformat:2|slice:"-2:" }}</sup>
+                    </p>
+                    <a href="#" class="seller">
+                        <img src="{% static 'p2p_site/images/one.jpg' %}" alt="Seller">
+                        <h5 class="seller">Seller Name</h5>
+                    </a>
+                    
+                </div>
+                <h3>{{ product.name }}</h3>
+            </a>
+            <button class="buy-now-btn">Buy Now</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'add_product' %}">Add Product</a>
+</div>
+
+<!-- Footer -->
+<section class="footer">
+    <h4><u>About Us</u></h4>
+	<p>Safeguarding online shopping with blah blah blah blah<br>So we are doing the best blah blah blah blah</p>
+		<h5>Office +1-<br>asjeremiah75@gmail.com</h5>
+
+	<h5>Copyright© <script>document.write(new Date().getFullYear());</script>  All rights reserved  |  TrustTrade. </h5>
+</section>
+
+
+
+
+<!--====================================================================================-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchIcon = document.querySelector('.search-icon');
+    const profileIcon = document.querySelector('.profile-icon');
+    const mobileSearchBox = document.querySelector('.mobile-search-box');
+    const mobileProfileDropdown = document.querySelector('.mobile-profile-dropdown');
+
+    searchIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        mobileSearchBox.classList.toggle('active');
+        mobileProfileDropdown.classList.remove('active');
+    });
+
+    profileIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        mobileProfileDropdown.classList.toggle('active');
+        mobileSearchBox.classList.remove('active');
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.mobile-icons') && !e.target.closest('.mobile-search-box') && !e.target.closest('.mobile-profile-dropdown')) {
+            mobileSearchBox.classList.remove('active');
+            mobileProfileDropdown.classList.remove('active');
+        }
+    });
+});
+</script>
+
+{% endblock %}
+
+
+
+
+{% if product.seller.profile_photo %}
+<img src="{{ product.seller.profile_photo.url }}" alt="{{ product.seller.business_name }}">
+{% else %}
+<img src="{% static 'p2p_site/images/default_profile.jpg' %}" alt="Default Profile">
+{% endif %}

@@ -1,0 +1,165 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+
+
+{% block stylesheet %} <link rel="stylesheet" href="static/p2p_site/css/index_style.css"> {% endblock %}
+{% block title %}Index{% endblock %}
+{% block style %}
+
+.header{
+	min-height: 81vh;
+	width: 100%;
+	background-image: linear-gradient(rgba(4,9,30,0.4),rgba(4,9,30,0.4)),url("{% static 'p2p_site/images/one.jpg' %}");
+	background-position: center;
+	background-size: cover;
+	position: relative;
+}
+
+
+.cta{
+	margin: 100px auto;
+	width: 80%;
+	background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url("{% static 'p2p_site/images/escrow.jpg' %}");
+	background-position: center;
+	background-size: cover;
+	border-radius: 10px;
+	text-align: center;
+	padding: 100px 0;
+}
+
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
+ 
+{% block content %}
+
+<section class="header">
+
+	<div class="text-box">
+		<h1>Welcome to TrustTrade.</h1>
+		<p>Join Us Now blah blah blah. Blah blah blah</p>
+		<a href="#" class="hero-btn" id="get-started-btn" data-action="register" >GET STARTED</a>
+	</div>
+
+
+	<div class="browse-marketplace">
+		<a href="{% url 'marketplace' %}" class="browse-link">Browse Marketplace<span class="arrow">>></span></a>
+	</div>
+</section>
+
+<!-------offers------>
+
+<section class="offers">
+	<h1>Why Join us</h1>
+	<p>With TrustTrade Blah blah blah blah.. HAVE FUN!!! </p>
+
+	<div class="row">
+		<div class="offers-col">
+			<h3>Security</h3>
+			<p>blah blah blah blah<br>so you can transactonline without worry blkah blah blah blah</p>
+			
+		</div>
+		<div class="offers-col">
+			<h3>Easy listing</h3>
+			<p>easy to list blah blah blah blah<br>so blah blah blah blah</p>
+			
+		</div>
+		<div class="offers-col">
+			<h3>Escrow function</h3>
+			<p>Blah blah blah blah<br>Blah blah blah blah</p>
+			
+		</div>
+		
+	</div>
+
+	<br><br>
+	<hr>
+</section>
+
+<!-----Section three------>
+
+<section class="stores">
+	<h1>Trending Categories</h1>
+	<p>checkout the trending products blah blah blah blah</p>
+
+	<div class="row">
+		<div class="stores-col">
+			<div class="image-grid">
+				<img src="{% static 'p2p_site/images/phone2.jpeg' %}" alt="Image 1">
+				<img src="{% static 'p2p_site/images/two1.jpg' %}" alt="Image 2">
+				<img src="{% static 'p2p_site/images/phone1.jpeg' %}" alt="Image 3">
+				<div class="last-image">
+					<img src="{% static 'p2p_site/images/two.jpg' %}" alt="Image 4">
+					<div class="overlay">9+</div>
+				</div>
+			</div>
+			<div class="layer">
+				<a href="#"><h3>Phones and Accessories</h3></a>
+			</div>
+		</div>
+		
+        <div class="stores-col">
+            <div class="image-grid">
+                <img src="{% static 'p2p_site/images/clothes1.jpeg' %}" alt="Image 1">
+                <img src="{% static 'p2p_site/images/clothes2.jpeg' %}" alt="Image 2">
+                <img src="{% static 'p2p_site/images/clothes3.jpeg' %}" alt="Image 3">
+                <div class="last-image">
+                    <img src="{% static 'p2p_site/images/clothes4.jpeg' %}" alt="Image 4">
+                    <div class="overlay">9+</div>
+                </div>
+            </div>
+            <div class="layer">
+                <a href="#"><h3>Clothing</h3></a>
+            </div>
+        </div>
+
+        <div class="stores-col">
+            <div class="image-grid">
+                <img src="{% static 'p2p_site/images/decor1.jpeg' %}" alt="Image 1">
+                <img src="{% static 'p2p_site/images/decor3.jpeg' %}" alt="Image 2">
+                <img src="{% static 'p2p_site/images/decor2.jpeg' %}" alt="Image 3">
+                <div class="last-image">
+                    <img src="{% static 'p2p_site/images/decor4.jpeg' %}" alt="Image 4">
+                    <div class="overlay">9+</div>
+                </div>
+            </div>
+            <div class="layer">
+                <a href="#"><h3>Decor</h3></a>
+            </div>
+        </div>
+	</div>
+	<br>
+	<div class="browse-marketplace">
+		<a href="{% url 'marketplace' %}" class="browse-link">Browse Marketplace <span class="arrow">>></span></a>
+	</div>
+	<br>
+	<hr>
+	
+</section>
+
+<section class="cta">
+	<h1>Contact US</h1>
+	<p>Click On The Link Below To Send Us A Message Or <br>To Subscribe For Newsletters</p>
+	<a href="#" class="hero-btn">Contact Us</a>
+	
+</section>
+
+
+<!-----Footer------>
+<section class="footer">
+	<h4><u>About Us</u></h4>
+	<p>Safeguarding online shopping with blah blah blah blah<br>So we are doing the best blah blah blah blah</p>
+		<h5>Office +1-<br>asjeremiah75@gmail.com</h5>
+
+	<h5>Copyright© <script>document.write(new Date().getFullYear());</script>  All rights reserved  |  TrustTrade. </h5>
+	
+</section>
+
+
+ <!--====================LOGIN AND REGISTER OVERLAY==============================================-->
+
+{% endblock %}
+

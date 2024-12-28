@@ -1,0 +1,121 @@
+{% extends "p2p_site/master.html" %}
+{% load static %}
+
+{% block stylesheet %} <link rel="stylesheet" href="{% static 'p2p_site/css/sellershop_style.css' %}"> {% endblock %}
+{% block title %}Seller Shop{% endblock %}
+
+{% block style %}
+    .overlay{
+        display : none;
+    }
+{% endblock %}
+
+{% block content %}
+{% include "p2p_site/nav.html" %}
+
+<!-- Main Content -->
+<div class="main-content">
+    <div class="sidebar">
+        <h3>Categories</h3>
+        <ul>
+            <li><a href="#">Electronics</a></li>
+            <li><a href="#">Clothing</a></li>
+            <li><a href="#">Home & Garden</a></li>
+        </ul>
+    </div>
+    <h1>This is the seller shop for <span>"{{ seller.business_name }}"</span> </h1>
+
+    <!-- Product Listings ======================================================================-->
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-item"> 
+            <a class="item-a" href="{% url 'product_detail' product.pk %}">
+                <img class="product-image" src="{{ product.main_image.url }}" alt="{{ product.name }}">
+                <div class="price-seller">
+                    <p class="price">
+                        ₵{{ product.price|floatformat:2|slice:":-3" }}<sup>.{{ product.price|floatformat:2|slice:"-2:" }}</sup>
+                    </p>
+                    
+                </div>
+                <h3>{{ product.name }}</h3>
+            </a>
+            <button class="buy-now-btn">Buy Now</button>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+
+<!-- Footer ==========================================-->
+<section class="footer">
+    <h4><u>About Us</u></h4>
+	<p>Safeguarding online shopping with blah blah blah blah<br>So we are doing the best blah blah blah blah</p>
+		<h5>Office +1-<br>asjeremiah75@gmail.com</h5>
+
+	<h5>Copyright© <script>document.write(new Date().getFullYear());</script>  All rights reserved  |  TrustTrade. </h5>
+</section>
+
+
+
+
+<!--====================================================================================-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchIcon = document.querySelector('.search-icon');
+    const profileIcon = document.querySelector('.profile-icon');
+    const mobileSearchBox = document.querySelector('.mobile-search-box');
+    const mobileProfileDropdown = document.querySelector('.mobile-profile-dropdown');
+
+    searchIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        mobileSearchBox.classList.toggle('active');
+        mobileProfileDropdown.classList.remove('active');
+    });
+
+    profileIcon.addEventListener('click', function(e) {
+        e.preventDefault();
+        mobileProfileDropdown.classList.toggle('active');
+        mobileSearchBox.classList.remove('active');
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.mobile-icons') && !e.target.closest('.mobile-search-box') && !e.target.closest('.mobile-profile-dropdown')) {
+            mobileSearchBox.classList.remove('active');
+            mobileProfileDropdown.classList.remove('active');
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.querySelector('.sidebar');
+    const footer = document.querySelector('.footer');
+    const contentWrapper = document.querySelector('.content-wrapper');
+
+    function adjustSidebar() {
+        const sidebarHeight = sidebar.offsetHeight;
+        const footerTop = footer.getBoundingClientRect().top;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+
+        if (footerTop - windowHeight < 0) {
+            const difference = windowHeight - footerTop;
+            sidebar.style.top = `${20 - difference}px`; 
+        } else {
+            sidebar.style.top = '20px';
+        }
+    }
+
+    window.addEventListener('scroll', adjustSidebar);
+    window.addEventListener('resize', adjustSidebar);
+});
+
+</script>
+
+
+
+   
+
+{% endblock %}
