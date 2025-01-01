@@ -16,7 +16,8 @@ import {
   Loader2,
   TrendingUp,
   Clock,
-  Gift
+  Gift,
+  MessageCircle
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFavorites, clearFavorites } from '../redux/features/favoriteSlice';
@@ -98,7 +99,8 @@ const UserProfile = () => {
     fetchProfileData();
   }, [userId]);
 
-  const getRecentActivities = (orders, favorites) => {
+  const getRecentActivities = (orders, favorites, ) => {
+    console.log('User chats:', profileData?.user_chats);
     const activities = [
       ...(orders || []).map(order => ({
         type: 'order',
@@ -111,7 +113,16 @@ const UserProfile = () => {
         data: {
           product_name: favorite.name 
         }
-      }))
+      })),
+      ...((profileData?.user_chats || []).map(chat => ({
+        type: 'chat',
+        date: new Date(chat.created_at),
+        data: {
+          id: chat.id,
+          product_name: chat.product?.name || 'Unknown Product', 
+          other_participant: chat.other_participant
+        }
+      })))
     ];
   
     return activities.sort((a, b) => b.date - a.date).slice(0, 5);
@@ -151,7 +162,7 @@ const UserProfile = () => {
   }
 
   const { user_data: user, user_seller_data: seller, user_orders: orders } = profileData;
-  const recentActivities = getRecentActivities(orders, favorites);
+  const recentActivities = getRecentActivities(orders, favorites, profileData?.user_chats);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -242,58 +253,78 @@ const UserProfile = () => {
               />
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm mb-6">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-              </div>
-              <div className="p-6">
-                {recentActivities && recentActivities.length > 0 ? (
-                  <div className="space-y-6">
-                    {recentActivities.map((activity, index) => (
-                      <div key={`${activity.type}-${index}`} className="flex items-start space-x-4">
-                        <div className={`p-2 rounded-lg ${
-                          activity.type === 'order' ? 'bg-blue-50' : 'bg-pink-50'
-                        }`}>
-                          {activity.type === 'order' ? (
-                            <ShoppingBag className="w-6 h-6 text-blue-600" />
-                          ) : (
-                            <Heart className="w-6 h-6 text-pink-600" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">
-                            {activity.type === 'order' ? (
-                              `Placed order #${activity.data.id}`
-                            ) : (
-                              `Saved ${activity.data.product_name} for later`
-                            )}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {activity.type === 'order' ? (
-                              `Order placed on ${activity.date.toLocaleDateString()}`
-                            ) : (
-                              `Added to wishlist • ${activity.data.category || 'Product'}`
-                            )}
-                          </p>
-                        </div>
-                        {activity.type === 'order' && (
-                          <StatusBadge status={activity.data.status} />
-                        )}
-                      </div>
-                    ))}
+            {/* Updated Recent Activity Section */}
+      <div className="bg-white rounded-xl shadow-sm mb-6">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+        </div>
+        <div className="p-6">
+          {recentActivities && recentActivities.length > 0 ? (
+            <div className="space-y-6">
+              {recentActivities.map((activity, index) => (
+                <div key={`${activity.type}-${index}`} className="flex items-start space-x-4">
+                  {/* Icon Container */}
+                  <div className={`p-2 rounded-lg ${
+                    activity.type === 'order' ? 'bg-blue-50' : 
+                    activity.type === 'chat' ? 'bg-indigo-50' : 
+                    'bg-pink-50'
+                  }`}>
+                    {activity.type === 'order' ? (
+                      <ShoppingBag className="w-6 h-6 text-blue-600" />
+                    ) : activity.type === 'chat' ? (
+                      <MessageCircle className="w-6 h-6 text-indigo-600" />
+                    ) : (
+                      <Heart className="w-6 h-6 text-pink-600" />
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <Clock className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No recent activity</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Your recent activities will appear here
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      {activity.type === 'order' ? (
+                        `Placed order #${activity.data.id}`
+                      ) : activity.type === 'chat' ? (
+                        `Chat about ${activity.data.product_name}`
+                      ) : (
+                        `Saved ${activity.data.product_name} for later`
+                      )}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {activity.type === 'order' ? (
+                        `Order placed on ${activity.date.toLocaleDateString()}`
+                      ) : activity.type === 'chat' ? (
+                        `With ${activity.data.other_participant.seller?.business_name || activity.data.other_participant.username} • ${activity.date.toLocaleDateString()}`
+                      ) : (
+                        `Added to wishlist • ${activity.data.category || 'Product'}`
+                      )}
                     </p>
                   </div>
-                )}
-              </div>
+
+                  {/* Action/Status */}
+                  {activity.type === 'order' ? (
+                    <StatusBadge status={activity.data.status} />
+                  ) : activity.type === 'chat' ? (
+                    <Link 
+                      to={`/chatroom/${activity.data.id}`}
+                      className="text-sm text-blue-600 hover:text-blue-500"
+                    >
+                      View Chat →
+                    </Link>
+                  ) : null}
+                </div>
+              ))}
             </div>
+          ) : (
+            <div className="text-center py-6">
+              <Clock className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No recent activity</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Your recent activities will appear here
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
 
             {/* Recommendations or Featured Items */}
             <div className="bg-white rounded-xl shadow-sm">

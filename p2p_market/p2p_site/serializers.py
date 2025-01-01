@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
-from .models import CustomUser, UserProfile, Seller, Category, Product, Chat, Message, Order, OrderItem, OrderUpdate
+from .models import CustomUser, UserProfile, Seller, Category, Product, Chat, Message, Order, OrderItem, OrderUpdate, ChatNotification
 from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
 from django.contrib.auth import get_user_model
 
@@ -71,7 +71,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ['id', 'name', 'slug']
         read_only_fields = ['slug']
-        
 
 class SellerSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
@@ -84,9 +83,9 @@ class SellerSerializer(serializers.ModelSerializer):
             'user', 'first_name', 'last_name', 'DOB', 'phone', 'business_name',
             'business_type', 'business_address', 'business_hours', 'city',
             'profile_photo', 'profile_photo_url', 'postal_code', 'delivery_radius',
-            'website', 'description', 'id_card', 'is_approved', 'region'
+            'website', 'description', 'id_card', 'is_approved', 'region', 'id'
         ]
-        read_only_fields = ['is_approved']
+        read_only_fields = ['is_approved', 'id']
 
     def get_profile_photo_url(self, obj):
         if obj.profile_photo:
@@ -96,9 +95,7 @@ class SellerSerializer(serializers.ModelSerializer):
             return obj.profile_photo.url  # Fallback for cases where `request` is not in context
         return None
 
-    
-    
-##===================================================================================
+##=========================================================================
 
 class ProductSerializer(serializers.ModelSerializer):
     seller = SellerSerializer(read_only=True)
@@ -207,9 +204,7 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-    
 #==========================================================================
-
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
@@ -248,7 +243,6 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_seller_name(self, obj):
         return obj.seller.business_name if obj.seller else ''
 
-
 class UserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     favourites = ProductSerializer(many=True, read_only=True)
@@ -258,20 +252,129 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'region', 'wallet_balance', 'favourites']
         read_only_fields = ['wallet_balance']
 
+# class MessageSerializer(serializers.ModelSerializer):
+#     sender_name = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Message
+#         fields = ['id', 'sender', 'sender_name', 'content', 'message_type', 
+#                  'metadata', 'timestamp', 'is_read']
+#         read_only_fields = ['sender', 'timestamp', 'is_read']
+
+#     def get_sender_name(self, obj):
+#         return obj.sender.username if obj.sender else None
+
+class ChatUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'first_name', 'last_name', 
+                 'email']
+
+class ChatProductSerializer(serializers.ModelSerializer):
+    seller = ChatUserSerializer(read_only=True)
+    
+    class Meta:
+        model = Product  # Import your Product model
+        fields = ['id', 'name', 'description', 'regular_price', 
+                 'price', 'main_image_url', 'seller']
+
+class MessageSerializer(serializers.ModelSerializer):
+     sender_details = ChatUserSerializer(source='sender', read_only=True)
+
+     class Meta:
+         model = Message
+         fields = ['id', 'sender', 'sender_details', 'content', 
+                  'timestamp', 'message_type']
+         read_only_fields = ['sender', 'timestamp', 'message_type']
+
+
 class ChatSerializer(serializers.ModelSerializer):
-    buyer = CustomUserSerializer(read_only=True)
-    seller = SellerSerializer(read_only=True)
     product = ProductSerializer(read_only=True)
+    other_participant = serializers.SerializerMethodField()
+    last_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Chat
-        fields = ['id', 'buyer', 'seller', 'product', 'created_at']
-        read_only_fields = ['created_at']
+        fields = ['id', 'chat_type', 'product', 'created_at', 
+                 'last_message_at', 'is_active', 'other_participant',
+                 'last_message']
 
-class MessageSerializer(serializers.ModelSerializer):
-    sender = CustomUserSerializer(read_only=True)
+    def get_other_participant(self, obj):
+        current_user = self.context.get('current_user')
+        other_user = obj.get_other_participant(current_user)
+        if other_user:
+            user_data = CustomUserSerializer(other_user).data
+            if other_user.is_seller and hasattr(other_user, 'seller'):
+                user_data['seller'] = SellerSerializer(other_user.seller).data
+            return user_data
+        return None
+
+    def get_last_message(self, obj):
+        if hasattr(obj, 'last_message_prefetch') and obj.last_message_prefetch:
+            return obj.last_message_prefetch[0].content if obj.last_message_prefetch else None
+        return None
+
+
+class ChatDetailSerializer(serializers.ModelSerializer):
+    """Serializer for detailed chat view including messages"""
+    messages = MessageSerializer(many=True, read_only=True)
+    buyer = serializers.SerializerMethodField()
+    seller = serializers.SerializerMethodField()
+    product_details = serializers.SerializerMethodField()
 
     class Meta:
-        model = Message
-        fields = ['id', 'chat', 'sender', 'content', 'timestamp', 'is_read']
-        read_only_fields = ['timestamp']
+        model = Chat
+        fields = [
+            'id', 'buyer', 'seller', 'product_details',
+            'created_at', 'last_message_at', 'is_active', 'messages'
+        ]
+        read_only_fields = ['created_at', 'last_message_at']
+
+    def get_buyer(self, obj):
+        return {
+            'id': obj.buyer.id,
+            'username': obj.buyer.username,
+            'name': f"{obj.buyer.first_name} {obj.buyer.last_name}".strip() or obj.buyer.username
+        }
+
+    def get_seller(self, obj):
+        return {
+            'id': obj.seller.id,
+            'business_name': obj.seller.business_name,
+            'user_id': obj.seller.user.id
+        }
+
+    def get_product_details(self, obj):
+        return {
+            'id': obj.product.id,
+            'name': obj.product.name,
+            'price': str(obj.product.price),
+            'main_image_url': obj.product.main_image.url if obj.product.main_image else None
+        }
+
+class ChatNotificationSerializer(serializers.ModelSerializer):
+    """Serializer for chat notifications"""
+    message_preview = serializers.SerializerMethodField()
+    sender_name = serializers.SerializerMethodField()
+    chat_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChatNotification
+        fields = [
+            'id', 'recipient', 'chat', 'message', 'is_read',
+            'created_at', 'message_preview', 'sender_name', 'chat_details'
+        ]
+        read_only_fields = ['created_at']
+
+    def get_message_preview(self, obj):
+        return obj.message.content[:100] + '...' if len(obj.message.content) > 100 else obj.message.content
+
+    def get_sender_name(self, obj):
+        sender = obj.message.sender
+        return f"{sender.first_name} {sender.last_name}".strip() or sender.username
+
+    def get_chat_details(self, obj):
+        return {
+            'product_name': obj.chat.product.name,
+            'other_party': obj.chat.seller.business_name if obj.recipient == obj.chat.buyer else obj.chat.buyer.username
+        }

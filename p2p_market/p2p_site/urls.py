@@ -3,7 +3,18 @@ from . import views
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse
 from django.views.generic import TemplateView
+from rest_framework.routers import DefaultRouter
+from rest_framework_nested import routers
+from .views import ChatViewSet, MessageViewSet
 
+
+router = DefaultRouter()
+router.register(r'chats', ChatViewSet, basename='chat')
+
+# Create a nested router for messages within chats
+chat_router = routers.NestedSimpleRouter(router, r'chats', lookup='chat')
+chat_router.register(r'messages', MessageViewSet, basename='chat-messages')
+ 
 
 urlpatterns = [
     #path('', views.homepage, name='homepage'),
@@ -38,6 +49,8 @@ urlpatterns = [
     path('api/userprofile/<int:pk>/', views.get_user, name='get_user'),
     path('api/favorites/', views.favorite_product, name='favourite_get'),  # GET request
     path('api/favorites/<int:pk>/', views.favorite_product, name='favourite_modify'),  # POST/DELETE requests
+    path('api/', include(router.urls)),
+    path('api/', include(chat_router.urls)),
     
     
     

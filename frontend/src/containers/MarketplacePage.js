@@ -166,8 +166,7 @@ const MarketplacePage = ({isAuthenticated, user}) => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <NavBar />
+    <div className="min-h-screen bg-gray-50 flex flex-col mt-16">
 
       {/*  Slideshow section */}
       <section className="relative bg-gray-100 overflow-hidden">

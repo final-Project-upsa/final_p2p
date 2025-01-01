@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Heart, Share2, Star, Truck, ShieldCheck, ArrowLeft, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
@@ -9,11 +10,79 @@ const ViewProductPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [product, setProduct] = useState(null);
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
+
+  const handleBuyNowClick = async () => {
+    try {
+        setIsCreatingChat(true);
+        const token = localStorage.getItem('access');
+        const config = {
+            headers: {
+                'Authorization': `JWT ${token}`
+            }
+        };
+
+        // Check if seller info exists
+        if (!product.seller?.id) {
+            console.error('Seller information missing:', product);
+            alert('Seller information is missing');
+            return;
+        }
+
+        const userResponse = await axios.get(
+          `${process.env.REACT_APP_API_URL}/auth/users/me/`,
+          config
+        );
+
+        const currentUserId = userResponse.data.id;
+
+        
+        // Check if currentUserId exists
+        if (!currentUserId) {
+            console.error('Current user ID is missing');
+            alert('You must be logged in to start a chat.');
+            return;
+        }
+
+        // Prepare request data
+        const requestData = {
+            sender_id: currentUserId,  // Include sender's ID
+            other_user_id: product.seller.id,  // Seller's ID
+            product_id: product.id,
+            chat_type: 'purchase'
+        };
+
+        console.log('Creating chat with data:', requestData);
+
+        const response = await axios.post(
+            `${process.env.REACT_APP_API_URL}/api/chats/`, 
+            requestData,
+            config
+        );
+
+        // Navigate to chat room after successful creation
+        navigate(`/chatroom/${response.data.id}`, {
+            state: { 
+                product: product,
+                seller: product.seller,
+                chatType: 'purchase'
+            }
+        });
+    } catch (error) {
+        console.error('Chat creation error:', error.response?.data || error.message);
+        alert('Failed to start chat with seller. Please try again.');
+    } finally {
+        setIsCreatingChat(false);
+    }
+};
+
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/product/${id}/`);
+        console.log({'res': response})
         setProduct(response.data.product);
       } catch (error) {
         console.error('Error fetching product details:', error);
@@ -189,10 +258,14 @@ const ViewProductPage = () => {
             </div>
 
             <div className="space-y-4">
-              <button className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2">
-                <ShieldCheck className="h-5 w-5" />
-                <span>Buy Now (Escrow Protected)</span>
-              </button>
+            <button 
+              onClick={handleBuyNowClick}
+              disabled={isCreatingChat}
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition duration-300 flex items-center justify-center space-x-2"
+            >
+              <ShieldCheck className="h-5 w-5" />
+              <span>{isCreatingChat ? 'Creating Chat...' : 'Buy Now (Escrow Protected)'}</span>
+            </button>
               <button className="w-full border border-blue-600 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition duration-300 flex items-center justify-center space-x-2">
                 <MessageCircle className="h-5 w-5" />
                 <span>Make an Offer</span>

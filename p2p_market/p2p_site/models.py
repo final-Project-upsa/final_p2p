@@ -254,27 +254,79 @@ class OrderUpdate(models.Model):
 
 #===================================================================================================================
 class Chat(models.Model):
-    buyer = models.ForeignKey('p2p_site.CustomUser', related_name='buyer_chats', on_delete=models.CASCADE)
-    seller = models.ForeignKey(Seller, related_name='seller_chats', on_delete=models.CASCADE)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    CHAT_TYPES = [
+        ('general', 'General Chat'),
+        ('purchase', 'Purchase Discussion'),
+        ('offer', 'Offer Discussion')
+    ]
+
+    participants = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, 
+        related_name='chats'
+    )
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='chats'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    last_message_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    chat_type = models.CharField(
+        max_length=20,
+        choices=CHAT_TYPES,
+        default='general'
+    )
 
     class Meta:
-        unique_together = ['buyer', 'seller', 'product']
-        ordering = ['-created_at']
+        ordering = ['-last_message_at']
+        indexes = [
+            models.Index(fields=['-last_message_at']),
+            models.Index(fields=['is_active']),
+        ]
+
+    def get_other_participant(self, user):
+        """Get the other participant in the chat."""
+        return self.participants.exclude(id=user.id).first()
 
     def __str__(self):
-        return f"Chat between {self.buyer.username} and {self.seller.user.username} about {self.product.name}"
+        return f"Chat {self.id} - {self.chat_type}"
+
+
 
 class Message(models.Model):
     chat = models.ForeignKey(Chat, related_name='messages', on_delete=models.CASCADE)
-    sender = models.ForeignKey('p2p_site.CustomUser', on_delete=models.CASCADE)
+    sender = models.ForeignKey(
+        CustomUser,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='sent_messages'
+    )
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
+    is_read = models.BooleanField(default=False)  
+    message_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('text', 'Text Message'),
+            ('system', 'System Message')
+        ],
+        default='text'
+    )
+    metadata = models.JSONField(null=True, blank=True, default=dict)  # Add this field
 
     class Meta:
-        ordering = ['timestamp']
+        ordering = ['-timestamp']
 
-    def __str__(self):
-        return f"Message from {self.sender.username} in chat {self.chat.id}"
+class ChatNotification(models.Model):  # Add this new model
+    recipient = models.ForeignKey('p2p_site.CustomUser', on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = ['recipient', 'message']

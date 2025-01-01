@@ -52,13 +52,13 @@ const AddProduct = () => {
       setError(`You can only upload up to ${maxImages} images`);
       return;
     }
-
+  
     const newImages = files.map(file => ({
       file,
       preview: URL.createObjectURL(file),
-      isMain: images.length === 0 
+      isMain: images.length === 0 && files.indexOf(file) === 0 // Mark as main if it's the first image
     }));
-
+  
     setImages(prev => [...prev, ...newImages]);
     setError('');
   };
@@ -124,18 +124,37 @@ const AddProduct = () => {
       productData.append('categories', JSON.stringify(formData.categories));
       
       let mainImageAdded = false;
-      images.forEach((image, index) => {
-        if (image.isMain) {
-          productData.append('main_image', image.file);
-          mainImageAdded = true;
-        } else {
-          const imageIndex = mainImageAdded ? index : index + 1;
-          productData.append(`image${imageIndex}`, image.file);
-        }
-      });
+      let additionalImageCount = 1;
 
-      if (!mainImageAdded && images.length > 0) {
+      // First, find the main image
+      const mainImage = images.find(img => img.isMain);
+
+      if (mainImage) {
+        // Add the main image first
+        productData.append('main_image', mainImage.file);
+        mainImageAdded = true;
+
+        // Then add all other images
+        images.forEach(image => {
+          if (!image.isMain) {
+            productData.append(`image${additionalImageCount}`, image.file);
+            additionalImageCount++;
+          }
+        });
+      } else if (images.length > 0) {
+        // If no main image is marked, use the first image as main
         productData.append('main_image', images[0].file);
+        
+        // Add remaining images starting from index 1
+        for (let i = 1; i < images.length; i++) {
+          productData.append(`image${i}`, images[i].file);
+        }
+      }
+
+      //debug debug
+      console.log('FormData contents:');
+      for (let [key, value] of productData.entries()) {
+        console.log(`${key}:`, value instanceof File ? value.name : value);
       }
 
       const accessToken = localStorage.getItem('access');

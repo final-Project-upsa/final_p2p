@@ -10,22 +10,180 @@ from django.http import HttpResponseRedirect
 from django.utils.http import url_has_allowed_host_and_scheme 
 from django.urls import reverse 
 from django.views.decorators.cache import never_cache 
-from .models import Product, Seller, Message, Chat, UserProfile, Category, Order, OrderItem, OrderUpdate, CustomUser
+from .models import Product, Seller, Message, Chat, UserProfile, Category, Order, OrderItem, OrderUpdate, CustomUser, ChatNotification
 from django.db.models import Sum, Count
 from .forms import ProductForm, SellerRegister, CustomRegisterForm
-from django.db.models import Q
+from django.db.models import Q, F, Prefetch
 import json
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
-from .serializers import ProductSerializer, UsercreateSerializer, CategorySerializer, SellerSerializer, CustomUserSerializer, LoginSerializer, UserProfileSerializer, OrderSerializer, OrderItemSerializer, OrderUpdateSerializer
-from rest_framework import status
+from .serializers import ProductSerializer, UsercreateSerializer, CategorySerializer, SellerSerializer, CustomUserSerializer, LoginSerializer, UserProfileSerializer, OrderSerializer, OrderItemSerializer, OrderUpdateSerializer, ChatSerializer, MessageSerializer
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import parser_classes
 
+
+
+class ChatViewSet(viewsets.ModelViewSet):
+    serializer_class = ChatSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return Chat.objects.filter(
+            participants=self.request.user,
+            is_active=True
+        ).prefetch_related(
+            'participants',
+            Prefetch(
+                'messages',
+                queryset=Message.objects.order_by('-timestamp'),
+                to_attr='last_message_prefetch'
+            ),
+            'product',
+            'product__seller'
+        ).order_by('-last_message_at')
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['current_user'] = self.request.user
+        return context
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            # Changed to use filter() first, then get() to properly handle ManyToMany relationship
+            instance = Chat.objects.filter(
+                participants=request.user,
+                is_active=True
+            ).get(id=kwargs.get('pk'))
+            
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data)
+        except Chat.DoesNotExist:
+            return Response(
+                {'error': 'Chat not found or you do not have access'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def create(self, request):
+        other_user_id = request.data.get('other_user_id')
+        product_id = request.data.get('product_id')
+        chat_type = request.data.get('chat_type', 'purchase')
+
+        # Validate input
+        if not other_user_id:
+            return Response(
+                {'error': 'Other user ID is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            other_user = CustomUser.objects.get(id=other_user_id)
+            if product_id:
+                product = Product.objects.get(id=product_id)
+                # Verify product belongs to the other user if they're the seller
+                if chat_type == 'purchase' and product.seller.id != other_user.id:
+                    return Response(
+                        {'error': 'Invalid seller for this product'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                product = None
+
+        except (CustomUser.DoesNotExist, Product.DoesNotExist):
+            return Response(
+                {'error': 'User or product not found'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check for existing chat
+        existing_chat = Chat.objects.filter(
+            participants=request.user
+        ).filter(
+            participants=other_user,
+            product_id=product_id,
+            chat_type=chat_type,
+            is_active=True
+        ).first()
+
+        if existing_chat:
+            serializer = self.get_serializer(existing_chat)
+            return Response(serializer.data)
+
+        # Create new chat
+        try:
+            chat = Chat.objects.create(
+                chat_type=chat_type,
+                product=product
+            )
+            chat.participants.add(request.user, other_user)
+            
+            # Create initial system message
+            Message.objects.create(
+                chat=chat,
+                sender=None,
+                content=f"Chat started" + (f" for {product.name}" if product else ""),
+                message_type='system'
+            )
+            
+            serializer = self.get_serializer(chat)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        try:
+            chat = self.get_queryset().get(pk=pk)
+            messages = chat.messages.filter(
+                read_by__contains=[],
+                sender__ne=request.user.id
+            )
+            messages.update(
+                read_by=F('read_by').concat([request.user.id])
+            )
+            return Response({'status': 'messages marked as read'})
+        except Chat.DoesNotExist:
+            return Response(
+                {'error': 'Chat not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
+
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        chat_id = self.kwargs.get('chat_pk')
+        return Message.objects.filter(
+            chat_id=chat_id,
+            chat__participants=self.request.user
+        ).select_related('sender').order_by('-timestamp')
+
+    def perform_create(self, serializer):
+        chat_id = self.kwargs.get('chat_pk')
+        chat = Chat.objects.get(id=chat_id)
+        
+        message = serializer.save(
+            sender=self.request.user,
+            chat_id=chat_id
+        )
+        
+        # Update chat's last_message_at
+        chat.last_message_at = timezone.now()
+        chat.save(update_fields=['last_message_at'])
 
 def marketplacee(request):
     products = Product.objects.all()
@@ -177,9 +335,18 @@ def product_detail(request, pk):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def product_detaill(request, pk):
-    products = get_object_or_404(Product, pk=pk)
-    product_serializer = ProductSerializer(products, context={'request': request})
-    return Response({'product': product_serializer.data})
+    product = get_object_or_404(Product, pk=pk)
+    product_serializer = ProductSerializer(product, context={'request': request})
+    seller_data = SellerSerializer(product.seller).data if product.seller else None
+    
+    # Get the seller ID from serialized data
+    seller_id = seller_data['id'] if seller_data else None
+    
+    # Return the response with both product and seller information
+    return Response({
+        'product': product_serializer.data,
+        'seller_id': seller_id  # Include seller ID in the response
+    })
 
 
 
@@ -340,12 +507,12 @@ def update_product(request, pk):
 
     
     
+# views.py
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user(request, pk):
-    # Fetch the user
     user = get_object_or_404(CustomUser, id=pk)
-
+    
     # Serialize the user data
     user_data = CustomUserSerializer(user).data
     response_data = {'user_data': user_data}
@@ -354,13 +521,45 @@ def get_user(request, pk):
     if user.is_seller and hasattr(user, 'seller'):
         seller_data = SellerSerializer(user.seller).data
         active_products = Product.objects.filter(seller=user.seller, is_active=True).count()
-        seller_data['active_products'] = active_products  # Include active products count
+        seller_data['active_products'] = active_products
         response_data['user_seller_data'] = seller_data
 
-    # Add user's orders (as a buyer)
-    user_orders = user.orders.all()
+    # Add user's orders
+    user_orders = user.orders.all().order_by('-created_at')
     orders_data = OrderSerializer(user_orders, many=True).data
     response_data['user_orders'] = orders_data
+
+    # Add user's chats
+    user_chats = Chat.objects.filter(
+        participants=user
+    ).select_related('product').prefetch_related(
+        'participants'
+    ).order_by('-created_at')
+    
+    chats_data = ChatSerializer(
+        user_chats, 
+        many=True,
+        context={'current_user': user}
+    ).data
+    response_data['user_chats'] = chats_data
+
+    # Add unread messages/notifications
+    unread_notifications = ChatNotification.objects.filter(
+        recipient=user,
+        is_read=False
+    ).select_related('message', 'chat').order_by('-created_at')
+    
+    unread_messages = [{
+        'id': notif.message.id,
+        'chat_id': notif.chat.id,
+        'content': notif.message.content,
+        'sender_id': notif.message.sender.id,
+        'sender_name': notif.message.sender.full_name or notif.message.sender.username,
+        'timestamp': notif.message.timestamp.isoformat(),
+        'product_name': notif.chat.product.name if notif.chat.product else None
+    } for notif in unread_notifications]
+    
+    response_data['unread_messages'] = unread_messages
 
     return Response(response_data)
 

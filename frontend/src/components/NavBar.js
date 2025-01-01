@@ -1,29 +1,38 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Heart, User, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { Search, Bell, Heart, User, Menu, X, LogOut, LayoutDashboard, Mail } from 'lucide-react';
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchFavorites, clearFavorites } from '../redux/features/favoriteSlice';
+import { fetchNotifications } from '../redux/features/notificationSlice';
 import FavoritesPanel from './FavoritesPanel';
+import NotificationsPanel from './NotificationsPanel';
 
 const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
+  // Existing state and hooks
   const dispatch = useDispatch();
-  const favorites = useSelector(state => state.favorites.items);
-  const loading = useSelector(state => state.favorites.loading);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false); // New state for favorites panel
+  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
+  // Redux selectors
+  const favorites = useSelector(state => state.favorites.items);
+  const unreadCount = useSelector(state => state.notifications.unreadCount);
+
+  // Fetch data on mount
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchFavorites());
+      dispatch(fetchNotifications());
     }
   }, [isAuthenticated, dispatch]);
 
+  // Existing click outside handler
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -42,6 +51,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
     };
   }, [isDropdownOpen]);
 
+  // Existing handlers
   const handleLogout = () => {
     dispatch(clearFavorites());
     logout();
@@ -51,73 +61,89 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const handleRemoveFromFavorites = (id) => {
-    // Implement remove from favorites functionality
-    console.log('Remove from favorites:', id);
-  };
-
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <button 
-              className="md:hidden mr-2 p-2 hover:bg-gray-100 rounded-lg"
-              onClick={() => setIsMobileSidebarOpen(true)}
-            >
-              <Menu className="h-6 w-6 text-gray-700" />
-            </button>
-            <h1 className="text-2xl font-bold text-blue-600">TrustTrade</h1>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="/marketplace" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Home</a>
-            <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Categories</a>
-            <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Deals</a>
-            <a 
-              href={user?.is_seller ? "/dashboard" : "/enroll_seller"} 
-              className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors"
-            >
-              {user?.is_seller ? "Dashboard" : "Sell"}
-            </a>
-          </div>
-
-          <div className="flex items-center space-x-1 md:space-x-4">
-            <div className="relative hidden md:flex">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-64 pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
-              />
-              <Search className="absolute left-3 top-2.5 text-gray-400 h-5 w-5" />
+    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50 w-full">
+      <div className="max-w-[100vw] mx-auto">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            {/* Left side - Logo and hamburger menu */}
+            <div className="flex items-center">
+              <button 
+                className="md:hidden mr-2 p-2 hover:bg-gray-100 rounded-lg"
+                onClick={() => setIsMobileSidebarOpen(true)}
+              >
+                <Menu className="h-6 w-6 text-gray-700" />
+              </button>
+              <h1 className="text-2xl font-bold text-blue-600">TrustTrade</h1>
             </div>
 
-            <button className="md:hidden p-2 hover:bg-gray-100 rounded-lg">
-              <Search className="h-5 w-5 text-gray-600" />
-            </button>
+            {/* Middle - Navigation Links (unchanged) */}
+            <div className="hidden md:flex items-center space-x-8">
+                <a href="/marketplace" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Home</a>
+                <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Categories</a>
+                <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Deals</a>
+                <a 
+                href={user?.is_seller ? "/dashboard" : "/enroll_seller"} 
+                className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors"
+                >
+                {user?.is_seller ? "Dashboard" : "Sell"}
+                </a>
+            </div>
 
-            <button 
-              className="p-2 hover:bg-gray-100 rounded-lg relative group"
-              onClick={() => {
-                if (!isAuthenticated) {
-                  navigate('/auth/user');
-                  return;
-                }
-                setIsFavoritesOpen(true);
-              }}
-            >
-              <Heart className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
-              {isAuthenticated && favorites.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
-              )}
-            </button>
+            {/* Right side - Search and Actions */}
+            <div className="flex items-center space-x-1 md:space-x-4">
+              {/* Search bar (unchanged) */}
+              <div className="relative hidden md:flex">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-64 pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm"
+                />
+                <Search className="absolute left-3 top-2.5 text-gray-400 h-5 w-5" />
+              </div>
 
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <Bell className="h-5 w-5 text-gray-600" />
-            </button>
+              {/* Mobile search button */}
+              <button className="md:hidden p-2 hover:bg-gray-100 rounded-lg">
+                <Search className="h-5 w-5 text-gray-600" />
+              </button>
 
-            <div className="relative">
+              {/* Favorites button */}
               <button 
+                className="p-2 hover:bg-gray-100 rounded-lg relative group"
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate('/auth/user');
+                    return;
+                  }
+                  setIsFavoritesOpen(true);
+                }}
+              >
+                <Heart className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+                {isAuthenticated && favorites.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
+                )}
+              </button>
+
+              {/* Notifications button */}
+              <button 
+                className="p-2 hover:bg-gray-100 rounded-lg relative group"
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    navigate('/auth/user');
+                    return;
+                  }
+                  setIsNotificationsOpen(true);
+                }}
+              >
+                <Bell className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+                {isAuthenticated && unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
+                )}
+              </button>
+
+              {/* User dropdown (unchanged) */}
+              <div className="relative">
+                <button 
                 ref={buttonRef}
                 className="p-2 hover:bg-gray-100 rounded-lg"
                 onClick={toggleDropdown}
@@ -157,6 +183,13 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                           <Bell className="mr-3 h-4 w-4" />
                           Notifications
                         </button>
+                        <button
+                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          onClick={() => navigate('/inbox')}
+                        >
+                          <Mail className="mr-3 h-4 w-4" />
+                          Inbox
+                        </button>
                         <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                           <Heart className="mr-3 h-4 w-4" />
                           Wishlist
@@ -190,6 +223,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                   )}
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>
@@ -201,6 +235,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
           isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out md:hidden z-50`}
       >
+        {/* Sidebar header */}
         <div className="h-full flex flex-col">
           <div className="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-xl font-bold text-blue-600">TrustTrade</h2>
@@ -212,8 +247,10 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
             </button>
           </div>
           
+          {/* Sidebar content */}
           <div className="flex-1 overflow-y-auto">
             <nav className="px-2 py-4 space-y-1">
+              {/* Main navigation links */}
               <a href="/marketplace" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
                 Home
               </a>
@@ -229,6 +266,9 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
               >
                 {user?.is_seller ? "Your Dashboard" : "Sell"}
               </a>
+             
+
+              {/* User account section */}
               {isAuthenticated ? (
                 <>
                   <div className="pt-4 pb-2">
@@ -238,6 +278,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                       </p>
                     </div>
                     <div className="mt-3 space-y-1">
+                      {/* Profile link */}
                       <a 
                         href="/userprofile" 
                         className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
@@ -245,6 +286,8 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                         <User className="mr-3 h-4 w-4" />
                         Profile
                       </a>
+
+                      {/* Favorites button */}
                       <button 
                         onClick={() => {
                           setIsMobileSidebarOpen(false);
@@ -260,16 +303,28 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                           </span>
                         )}
                       </button>
-                      <a 
-                        href="#" 
-                        className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
+
+                      {/* Notifications button */}
+                      <button 
+                        onClick={() => {
+                          setIsMobileSidebarOpen(false);
+                          setIsNotificationsOpen(true);
+                        }}
+                        className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
                       >
                         <Bell className="mr-3 h-4 w-4" />
                         Notifications
-                      </a>
+                        {unreadCount > 0 && (
+                          <span className="ml-auto bg-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Logout button */}
                       <button 
                         onClick={handleLogout}
-                        className="flex w-full items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
+                        className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
                       >
                         <LogOut className="mr-3 h-4 w-4" />
                         Log out
@@ -278,6 +333,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                   </div>
                 </>
               ) : (
+                // Login/Register buttons for non-authenticated users
                 <div className="pt-4">
                   <div className="px-3 space-y-2">
                     <button
@@ -297,32 +353,19 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
               )}
             </nav>
           </div>
-          
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <img
-                  className="h-8 w-auto"
-                  src="/api/placeholder/32/32"
-                  alt="Store logo"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Need Help?</p>
-                <p className="text-xs text-gray-500">Contact Support</p>
-              </div>
-            </div>
-          </div>
         </div>
       </aside>
 
-      {/* New Favorites Panel */}
+      {/* Panels */}
       <FavoritesPanel
         isOpen={isFavoritesOpen}
         onClose={() => setIsFavoritesOpen(false)}
         favorites={favorites}
-        loading={loading}
-        onRemove={handleRemoveFromFavorites}
+      />
+      
+      <NotificationsPanel
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
       />
     </nav>
   );
@@ -331,7 +374,5 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
 const mapStateToProps = state => ({
   auth: state.auth
 });
-
-
 
 export default connect(mapStateToProps, { logout })(NavBar);

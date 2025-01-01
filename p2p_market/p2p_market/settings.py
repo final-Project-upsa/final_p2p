@@ -82,14 +82,10 @@ CSRF_TRUSTED_ORIGINS = ["http://*", "https://*"]
 # Configure ASGI application
 ASGI_APPLICATION = 'p2p_market.asgi.application'
 
-# Redis configuration for channel layers
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],  
-        },
-    },
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
 }
 
 MIDDLEWARE = [

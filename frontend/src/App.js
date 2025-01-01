@@ -23,6 +23,9 @@ import { Provider } from 'react-redux';
 import store from './store';
 import { loadUser } from './actions/auth';
 import Footer from './components/FooterSide';
+import ChatRoom from './containers/Chat_components/ChatRoom';
+import Inbox from './containers/Inbox';
+
 
 
   const App = () => {
@@ -34,7 +37,13 @@ import Footer from './components/FooterSide';
         <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/marketplace" element={
+              <>
+                <NavBar />
+                <MarketplacePage />
+              </>
+            } />
+
             <Route 
               path="/enroll_seller" 
               element={
@@ -52,6 +61,25 @@ import Footer from './components/FooterSide';
             <Route exact path='/activate/:uid/:token' Component={ActivateSuccess}/>
             <Route exact path='/auth/user' Component={LoginPage} />
             <Route exact path='/signup' Component={SignUp} />
+            {/* <Route exact path='/chatroom/:id' Component={ChatRoom} /> */}
+            <Route 
+              path="/chatroom/:id" 
+              element={
+                <ProtectedRoute>
+                  <NavBar />
+                  <ChatRoom />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/inbox" 
+              element={
+                <ProtectedRoute>
+                  <NavBar />
+                  <Inbox />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/userprofile" 
               element={
