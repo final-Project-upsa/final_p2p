@@ -89,7 +89,7 @@ const ChatRoom = () => {
       const token = localStorage.getItem('access');
       const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
       const ws = new WebSocket(
-        `${wsScheme}://localhost:8000/ws/chat/${id}/?token=${token}`
+        `${wsScheme}://${process.env.REACT_APP_WS_URL}/ws/chat/${id}/?token=${token}`
       );
 
       ws.onopen = () => {

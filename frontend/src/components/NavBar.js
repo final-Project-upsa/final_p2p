@@ -179,10 +179,6 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                             Seller Dashboard
                           </button>
                         )}
-                        <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          <Bell className="mr-3 h-4 w-4" />
-                          Notifications
-                        </button>
                         <button
                           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                           onClick={() => navigate('/inbox')}

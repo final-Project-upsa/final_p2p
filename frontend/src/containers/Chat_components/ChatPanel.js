@@ -9,7 +9,6 @@ const LoadingSpinner = () => (
   </div>
 );
 
-
 const ChatPanel = ({ 
     chat, 
     currentUser, 
@@ -27,16 +26,70 @@ const ChatPanel = ({
     const messageContainerRef = useRef(null);
   
     const scrollToBottom = () => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      if (messageContainerRef.current && messagesEndRef.current) {
+        const container = messageContainerRef.current;
+        const scrollHeight = container.scrollHeight;
+        const containerHeight = container.clientHeight;
+        
+        // Calculate the correct scroll position accounting for fixed elements
+        const headerHeight = 96; // 24rem padding-top in mobile view
+        const inputHeight = 80; // approximate height of input area
+        const targetScroll = isMobileView 
+          ? scrollHeight - containerHeight + headerHeight + inputHeight
+          : scrollHeight;
+        
+        container.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth'
+        });
       }
     };
-
-    
   
+    // Scroll when new messages arrive
     useEffect(() => {
-      scrollToBottom();
+      if (messages.length > 0) {
+        // Initial delay for DOM rendering
+        const timeoutId = setTimeout(scrollToBottom, 100);
+        return () => clearTimeout(timeoutId);
+      }
     }, [messages]);
+
+    // Handle mobile view changes
+    useEffect(() => {
+      if (isMobileView && messages.length > 0) {
+        // Additional delay for mobile transition
+        const timeoutId = setTimeout(scrollToBottom, 300);
+        return () => clearTimeout(timeoutId);
+      }
+    }, [isMobileView, messages]);
+
+    // Handle window resize
+    useEffect(() => {
+      const handleResize = () => {
+        if (messages.length > 0) {
+          scrollToBottom();
+        }
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, [messages]);
+
+    // Handle keyboard appearance on mobile
+    useEffect(() => {
+      const handleFocus = () => {
+        if (isMobileView) {
+          // Delay to account for keyboard animation
+          setTimeout(scrollToBottom, 300);
+        }
+      };
+
+      const input = document.querySelector('input[type="text"]');
+      if (input) {
+        input.addEventListener('focus', handleFocus);
+        return () => input.removeEventListener('focus', handleFocus);
+      }
+    }, [isMobileView]);
   
     if (isLoading || !chat) return <LoadingSpinner />;
   
@@ -47,58 +100,56 @@ const ChatPanel = ({
     return (
       <div className={`
         h-full bg-white flex flex-col
-        ${isMobileView ? 'rounded-none' : 'lg:rounded-2xl'}
-        ${isMobileView ? '' : 'shadow-lg'}
+        ${isMobileView ? 'fixed inset-0' : 'lg:rounded-2xl lg:shadow-lg'}
       `}>
         {/* Chat Header */}
-      <div className={`
-        px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 border-b
-        ${isMobileView ? '' : 'lg:rounded-t-2xl'}
-      `}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            {otherUser.profile_photo ? (
-              <img 
-                src={getMediaUrl(otherUser.profile_photo)} 
-                alt="" 
-                className="w-10 h-10 rounded-full border-2 border-white" 
-              />
-            ) : (
-              <LetterAvatar 
-                name={displayName}
-                className="w-10 h-10 text-lg border-2 border-white"
-              />
-            )}
-            <div className="text-white">
-              <h3 className="font-semibold">{displayName}</h3>
-              <div className="flex items-center space-x-2 text-sm opacity-90">
-                {otherUser.rating && (
-                  <>
-                    <div className="flex items-center">
-                      <Star className="w-4 h-4 text-yellow-300 mr-1" />
-                      <span>{otherUser.rating}</span>
-                    </div>
-                    <span>•</span>
-                  </>
-                )}
-                <span>Active {chat.last_message_at ? new Date(chat.last_message_at).toLocaleDateString() : 'Recently'}</span>
+        <div className={`
+          px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-800 border-b
+          ${isMobileView ? 'fixed top-0 left-0 right-0 z-50' : 'lg:rounded-t-2xl'}
+        `}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              {otherUser.profile_photo ? (
+                <img 
+                  src={getMediaUrl(otherUser.profile_photo)} 
+                  alt="" 
+                  className="w-10 h-10 rounded-full border-2 border-white" 
+                />
+              ) : (
+                <LetterAvatar 
+                  name={displayName}
+                  className="w-10 h-10 text-lg border-2 border-white"
+                />
+              )}
+              <div className="text-white">
+                <h3 className="font-semibold">{displayName}</h3>
+                <div className="flex items-center space-x-2 text-sm opacity-90">
+                  {otherUser.rating && (
+                    <>
+                      <div className="flex items-center">
+                        <Star className="w-4 h-4 text-yellow-300 mr-1" />
+                        <span>{otherUser.rating}</span>
+                      </div>
+                      <span>•</span>
+                    </>
+                  )}
+                  <span>Active {chat.last_message_at ? new Date(chat.last_message_at).toLocaleDateString() : 'Recently'}</span>
+                </div>
               </div>
             </div>
+            <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <MoreVertical className="w-5 h-5 text-white" />
+            </button>
           </div>
-          <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <MoreVertical className="w-5 h-5 text-white" />
-          </button>
         </div>
-      </div>
-
   
         {/* Messages Container */}
         <div 
           ref={messageContainerRef}
-          className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar"
-          style={{
-            height: isMobileView ? 'calc(100vh - 160px)' : 'auto'
-          }}
+          className={`
+            flex-1 overflow-y-auto space-y-4 custom-scrollbar
+            ${isMobileView ? 'pt-24 pb-32 px-4' : 'p-6'}
+          `}
         >
           {messages.map((msg, index) => {
             const isCurrentUserMessage = msg.sender_id === currentUser?.id;
@@ -129,15 +180,18 @@ const ChatPanel = ({
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} className="h-4" />
         </div>
   
         {/* Message Input */}
-        <form onSubmit={sendMessage} className={`
-          p-4 bg-gray-50 
-          ${isMobileView ? '' : 'lg:rounded-b-2xl'}
-        `}>
-          <div className="flex items-center space-x-3 bg-white rounded-full p-2 shadow-sm">
+        <form 
+          onSubmit={sendMessage} 
+          className={`
+            p-4 bg-gray-50 
+            ${isMobileView ? 'fixed bottom-16 left-0 right-0 z-50 shadow-lg' : 'lg:rounded-b-2xl'}
+          `}
+        >
+          <div className="flex items-center space-x-3 bg-white rounded-full p-1 shadow-sm">
             <button type="button" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <ImageIcon className="w-6 h-6 text-gray-600" />
             </button>
@@ -167,6 +221,6 @@ const ChatPanel = ({
         </form>
       </div>
     );
-  };
-  
-  export default ChatPanel;
+};
+
+export default ChatPanel;

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { removeFavorite } from '../redux/features/favoriteSlice';
 import axios from 'axios';
+import { getMediaUrl } from '../utils/mediaURL';
 
 const FavoritesPanel = ({ 
   isOpen, 
@@ -110,7 +111,7 @@ const FavoritesPanel = ({
                     onClick={() => navigate(`/product/${item.id}`)}
                   >
                     <img 
-                      src={item.main_image_url} 
+                      src={getMediaUrl(item.main_image_url)} 
                       alt={item.name}
                       className="w-24 h-24 object-cover rounded-lg"
                     />

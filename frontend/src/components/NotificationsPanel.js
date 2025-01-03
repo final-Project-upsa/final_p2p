@@ -58,7 +58,7 @@ const NotificationsPanel = ({ isOpen, onClose }) => {
         const token = localStorage.getItem('access');
         const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const ws = new WebSocket(
-          `${wsScheme}://localhost:8000/ws/notifications/?token=${token}`
+          `${wsScheme}://${process.env.REACT_APP_WS_URL}/ws/notifications/?token=${token}`
         );
 
         ws.onopen = () => {

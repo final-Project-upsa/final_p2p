@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Heart, Share2, Star, Truck, ShieldCheck, ArrowLeft, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import Footer from '../components/FooterSide'; 
 import NavBar from '../components/NavBar';
+import { getMediaUrl } from '../utils/mediaURL';
 
 const ViewProductPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -71,7 +72,7 @@ const ViewProductPage = () => {
         });
     } catch (error) {
         console.error('Chat creation error:', error.response?.data || error.message);
-        alert('Failed to start chat with seller. Please try again.');
+        alert('Failed to start chat with seller. Please check login status and try again.');
     } finally {
         setIsCreatingChat(false);
     }
@@ -116,7 +117,7 @@ const ViewProductPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col mt-16">
       <NavBar />
       <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center">
@@ -149,7 +150,7 @@ const ViewProductPage = () => {
           >
               {productImages.length > 0 ? (
                 <img
-                  src={productImages[selectedImage]}
+                  src={getMediaUrl(productImages[selectedImage])}
                   alt={`${product.name} - Pic ${selectedImage + 1}`}
                   className="w-full h-full object-contain"
                 />
@@ -185,7 +186,7 @@ const ViewProductPage = () => {
                     }`}
                   >
                     <img
-                      src={image}
+                      src={getMediaUrl(image)}
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                       onClick={() => setSelectedImage(index)}
@@ -229,7 +230,7 @@ const ViewProductPage = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
                   <img 
-                    src={product.seller.profile_photo || '/default-avatar.png'} 
+                    src={getMediaUrl(product.seller.profile_photo) || '/default-avatar.png'} 
                     alt={product.seller?.business_name} 
                     className="w-full h-full rounded-full object-cover"
                   />

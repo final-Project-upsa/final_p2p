@@ -52,7 +52,7 @@ const ProductCard = ({ product }) => {
       <Link to={`/product/${product.id}`} className="block">
         <img src={getMediaUrl(product.main_image_url)} alt={product.name} className="w-full h-48 object-cover" />
         <div className="p-4">
-          <h3 className="text-lg font-semibold mb-2 line-clamp-2">{product.name}</h3>
+          <h3 className="text-lg font-semibold mb-2 line-clamp-1">{product.name}</h3>
           <div className="flex justify-between items-center mb-2">
             <span className="text-xl font-bold text-blue-600">
               ₵{product.sale_price}
