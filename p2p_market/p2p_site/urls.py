@@ -49,6 +49,8 @@ urlpatterns = [
     path('api/userprofile/<int:pk>/', views.get_user, name='get_user'),
     path('api/favorites/', views.favorite_product, name='favourite_get'),  # GET request
     path('api/favorites/<int:pk>/', views.favorite_product, name='favourite_modify'),  # POST/DELETE requests
+    path('api/carts/', views.carts, name='carts_get'),  # GET request
+    path('api/carts/<int:pk>/', views.carts, name='carts_modify'),  # POST/DELETE requests
     path('api/', include(router.urls)),
     path('api/', include(chat_router.urls)),
     

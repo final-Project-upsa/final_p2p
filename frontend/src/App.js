@@ -25,6 +25,7 @@ import { loadUser } from './actions/auth';
 import Footer from './components/FooterSide';
 import ChatRoom from './containers/Chat_components/ChatRoom';
 import Inbox from './containers/Inbox';
+import ProductAnalytics from './containers/Dashboard_Components/ProductAnalytics';
 
 
 
@@ -96,6 +97,7 @@ import Inbox from './containers/Inbox';
                 <Route path="products" element={<ProductsTab />} />
                 <Route path="products/addproduct" element={<AddProduct />} />
                 <Route path="/products/edit/:productId" element={<EditProduct />} />
+                <Route path="/products/:id/analytics" element={<ProductAnalytics />} />
               </Routes>
             </DashboardLayout>} />
 

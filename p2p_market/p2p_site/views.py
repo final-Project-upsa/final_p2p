@@ -568,15 +568,41 @@ def get_user(request, pk):
 @api_view(['GET', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def favorite_product(request, pk=None):
-    user_profile = request.user.profile  
-    
+    user_profile = request.user.profile
+
+    # Special case for sellers requesting analytics
+    seller_analytics = request.query_params.get('seller_analytics')
+    if seller_analytics and pk:
+        product = get_object_or_404(Product, id=pk)
+        
+        # Check if the requesting user is the seller of this product
+        if not hasattr(request.user, 'seller') or product.seller != request.user.seller:
+            return Response({
+                'status': 'error',
+                'message': 'You do not have permission to view these analytics'
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        # Get all users who favorited this product
+        favorited_users = UserProfile.objects.filter(favourites=product)
+        
+        # Create detailed analytics response
+        analytics_data = {
+            'total_favorites': favorited_users.count(),
+            'unique_users': favorited_users.count(),
+            'favorites_data': [{
+                'user_id': profile.user.id,
+                'created_at': profile.created_at.isoformat() if hasattr(profile, 'created_at') else None
+            } for profile in favorited_users],
+        }
+        
+        return Response(analytics_data)
+
     if request.method == 'GET':
-        # Get all favorites
+        # Get all favorites for the current user
         favorites = user_profile.favourites.all()
         serializer = ProductSerializer(favorites, many=True, context={'request': request})
         return Response(serializer.data)
 
-    
     # For both POST and DELETE, get the product first
     product = get_object_or_404(Product, id=pk)
         
@@ -588,6 +614,32 @@ def favorite_product(request, pk=None):
     elif request.method == 'DELETE':
         # Remove from favorites
         user_profile.favourites.remove(product)
+        return Response({'status': 'removed'})
+    
+    
+    
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def carts(request, pk=None):
+    user_profile = request.user.profile
+
+    if request.method == 'GET':
+        # Get all cart for the current user
+        favorites = user_profile.carts.all()
+        serializer = ProductSerializer(favorites, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    # For both POST and DELETE, get the product first
+    product = get_object_or_404(Product, id=pk)
+        
+    if request.method == 'POST':
+        # Add to carts
+        user_profile.carts.add(product)
+        return Response({'status': 'added'})
+        
+    elif request.method == 'DELETE':
+        # Remove from carts
+        user_profile.carts.remove(product)
         return Response({'status': 'removed'})
     
     

@@ -255,9 +255,9 @@ const ProductsTab = () => {
                   </span>
                   <button 
                     className="text-blue-600 text-sm hover:underline"
-                    onClick={() => window.location.href = `/product/${product.id}`}
+                    onClick={() =>navigate(`/dashboard/products/${product.id}/analytics`)}
                   >
-                    View Details
+                    View Analytics
                   </button>
                 </div>
               </div>

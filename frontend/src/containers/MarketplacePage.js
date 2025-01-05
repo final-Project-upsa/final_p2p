@@ -8,6 +8,7 @@ import NavBar from '../components/NavBar'
 import Footer from '../components/FooterSide'
 import ProductCard from '../components/ProductCard';
 import { connect } from 'react-redux';
+import HeroSlideshow from '../components/HeroSlideshow';
 
 const MarketplacePage = ({isAuthenticated, user}) => {
   const [products, setProducts] = useState([]);
@@ -20,26 +21,14 @@ const MarketplacePage = ({isAuthenticated, user}) => {
   const categoryRef = useRef(null);
   const sliderRef = useRef(null);
   const stickyRef = useRef(null);
+  const slideIntervalRef = useRef(null);
   const navHeight = 64; 
-
-  const heroSlides = [
-    { image: escrow, title: 'Flash Sales', subtitle: 'Up to 50% off on selected items' },
-    { image: two1, title: 'New Arrivals', subtitle: 'Check out the latest products' },
-    { image: one, title: 'Free Shipping', subtitle: 'On orders over 50' },
-  ];
 
   useEffect(() => {
     fetchCategories();
     fetchProducts();
   }, []);;
 
-  useEffect(() => {
-    const slideInterval = setInterval(() => {
-      nextSlide();
-    }, 5000);
-  
-    return () => clearInterval(slideInterval);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -99,13 +88,6 @@ const MarketplacePage = ({isAuthenticated, user}) => {
     fetchProducts(activeCategory === 'All' ? '' : activeCategory, e.target.value);
   };
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-  };
 
   const scrollCategories = (direction) => {
     if (sliderRef.current) {
@@ -169,43 +151,7 @@ const MarketplacePage = ({isAuthenticated, user}) => {
     <div className="min-h-screen bg-gray-50 flex flex-col mt-16">
 
       {/*  Slideshow section */}
-      <section className="relative bg-gray-100 overflow-hidden">
-        <div className="container mx-auto px-4 py-8">
-          <div className="relative h-96 rounded-lg overflow-hidden shadow-xl">
-            {heroSlides.map((slide, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ${
-                  index === currentSlide ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <img src={slide.image} alt={slide.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                  <div className="text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{slide.title}</h2>
-                    <p className="text-xl md:text-2xl text-white mb-8">{slide.subtitle}</p>
-                    <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition duration-300">
-                      Shop Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={prevSlide}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition duration-300"
-            >
-              <ChevronLeft className="h-6 w-6 text-gray-800" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition duration-300"
-            >
-              <ChevronRight className="h-6 w-6 text-gray-800" />
-            </button>
-          </div>
-        </div>
-      </section>
+      <HeroSlideshow />
 
       {/* Main Content Area */}
       <main className="flex-1 container mx-auto px-4 py-8">

@@ -93,6 +93,7 @@ class UserProfile(models.Model):
     region = models.TextField()
     wallet_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     favourites = models.ManyToManyField('Product', related_name='favourited_by', blank=True)
+    carts = models.ManyToManyField('Product', related_name='added_to_cart_by', blank=True)
 
     def __str__(self):
         return f"Profile for {self.user.username}"

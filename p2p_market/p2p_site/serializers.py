@@ -246,23 +246,12 @@ class OrderSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     favourites = ProductSerializer(many=True, read_only=True)
+    carts = ProductSerializer(many=True, read_only=True)
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'user', 'region', 'wallet_balance', 'favourites']
+        fields = ['id', 'user', 'region', 'wallet_balance', 'favourites', 'carts']
         read_only_fields = ['wallet_balance']
-
-# class MessageSerializer(serializers.ModelSerializer):
-#     sender_name = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = Message
-#         fields = ['id', 'sender', 'sender_name', 'content', 'message_type', 
-#                  'metadata', 'timestamp', 'is_read']
-#         read_only_fields = ['sender', 'timestamp', 'is_read']
-
-#     def get_sender_name(self, obj):
-#         return obj.sender.username if obj.sender else None
 
 class ChatUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -286,7 +275,6 @@ class MessageSerializer(serializers.ModelSerializer):
          fields = ['id', 'sender', 'sender_details', 'content', 
                   'timestamp', 'message_type']
          read_only_fields = ['sender', 'timestamp', 'message_type']
-
 
 class ChatSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
@@ -313,7 +301,6 @@ class ChatSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'last_message_prefetch') and obj.last_message_prefetch:
             return obj.last_message_prefetch[0].content if obj.last_message_prefetch else None
         return None
-
 
 class ChatDetailSerializer(serializers.ModelSerializer):
     """Serializer for detailed chat view including messages"""

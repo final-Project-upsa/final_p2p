@@ -99,34 +99,41 @@ const UserProfile = () => {
     fetchProfileData();
   }, [userId]);
 
-  const getRecentActivities = (orders, favorites, ) => {
-    console.log('User chats:', profileData?.user_chats);
+  const getRecentActivities = (orders, favorites, chats) => {
+    console.log("Favorites: ", favorites);
+    console.log("Chats: ", chats);
+
+    // In getRecentActivities:
     const activities = [
-      ...(orders || []).map(order => ({
-        type: 'order',
-        date: new Date(order.created_at),
-        data: order
-      })),
-      ...(favorites || []).map(favorite => ({
-        type: 'favorite',
-        date: new Date(favorite.created_at),
-        data: {
-          product_name: favorite.name 
-        }
-      })),
-      ...((profileData?.user_chats || []).map(chat => ({
+      // Chats mapping stays the same
+      ...((chats || []).map(chat => ({
         type: 'chat',
         date: new Date(chat.created_at),
         data: {
           id: chat.id,
-          product_name: chat.product?.name || 'Unknown Product', 
+          product_name: chat.product?.name || 'Unknown Product',
           other_participant: chat.other_participant
         }
-      })))
+      }))),
+      // Updated favorites mapping to match the data structure
+      ...(favorites || []).map(favorite => ({
+        type: 'favorite',
+        date: new Date(favorite.created_at),
+        data: {
+          id: favorite.id,
+          product_name: favorite.name,  // Use favorite.name instead of product_name
+          category: favorite.categories?.[0]?.name || 'Uncategorized'  // Get category name if available
+        }
+      }))
     ];
-  
-    return activities.sort((a, b) => b.date - a.date).slice(0, 5);
-  };
+
+    console.log("Combined Activities before sort: ", activities);
+    const sortedActivities = activities.sort((a, b) => b.date - a.date).slice(0, 5);
+    console.log("Final sorted activities: ", sortedActivities);
+    console.log("Final activities:", activities);
+    
+    return sortedActivities;
+};
 
   if (loading) {
     return (
@@ -286,7 +293,7 @@ const UserProfile = () => {
                       ) : activity.type === 'chat' ? (
                         `Chat about ${activity.data.product_name}`
                       ) : (
-                        `Saved ${activity.data.product_name} for later`
+                        `Saved ${activity.data.product_name || activity.data.name || activity.data.category || 'Product'} for later`
                       )}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -295,7 +302,7 @@ const UserProfile = () => {
                       ) : activity.type === 'chat' ? (
                         `With ${activity.data.other_participant.seller?.business_name || activity.data.other_participant.username} • ${activity.date.toLocaleDateString()}`
                       ) : (
-                        `Added to wishlist • ${activity.data.category || 'Product'}`
+                        `Added to wishlist • ${activity.date.toLocaleDateString()}`
                       )}
                     </p>
                   </div>

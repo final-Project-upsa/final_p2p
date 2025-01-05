@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Heart, User, Menu, X, LogOut, LayoutDashboard, Mail } from 'lucide-react';
+import { Search, Bell, ShoppingCart, User, Menu, X, LogOut, LayoutDashboard, Mail } from 'lucide-react';
 import { connect } from 'react-redux';
 import { logout } from '../actions/auth';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchFavorites, clearFavorites } from '../redux/features/favoriteSlice';
+import { fetchCarts, clearCarts } from '../redux/features/cartSlice';
 import { fetchNotifications } from '../redux/features/notificationSlice';
-import FavoritesPanel from './FavoritesPanel';
+import CartsPanel from './CartsPanel';
 import NotificationsPanel from './NotificationsPanel';
 
 const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
@@ -15,19 +15,19 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+  const [isCartsOpen, setIsCartsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
   // Redux selectors
-  const favorites = useSelector(state => state.favorites.items);
+  const carts = useSelector(state => state.carts.items);
   const unreadCount = useSelector(state => state.notifications.unreadCount);
 
   // Fetch data on mount
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(fetchFavorites());
+      dispatch(fetchCarts());
       dispatch(fetchNotifications());
     }
   }, [isAuthenticated, dispatch]);
@@ -53,7 +53,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
 
   // Existing handlers
   const handleLogout = () => {
-    dispatch(clearFavorites());
+    dispatch(clearCarts());
     logout();
   };
 
@@ -77,18 +77,21 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
               <h1 className="text-2xl font-bold text-blue-600">TrustTrade</h1>
             </div>
 
-            {/* Middle - Navigation Links (unchanged) */}
+            {/* Middle - Navigation Links*/}
             <div className="hidden md:flex items-center space-x-8">
-                <a href="/marketplace" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Home</a>
-                <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Categories</a>
-                <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Deals</a>
-                <a 
-                href={user?.is_seller ? "/dashboard" : "/enroll_seller"} 
-                className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors"
-                >
-                {user?.is_seller ? "Dashboard" : "Sell"}
-                </a>
+              <a href="/marketplace" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Home</a>
+              <a href="#" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Categories</a>
+              {user && ( // show Inbox link if the user has login only
+                  <a href="/inbox" className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors">Inbox</a>
+              )}
+              <a 
+                  href={user?.is_seller ? "/dashboard" : "/enroll_seller"} 
+                  className="text-gray-700 text-sm font-medium hover:text-blue-600 transition-colors"
+              >
+                  {user?.is_seller ? "Dashboard" : "Sell"}
+              </a>
             </div>
+
 
             {/* Right side - Search and Actions */}
             <div className="flex items-center space-x-1 md:space-x-4">
@@ -107,7 +110,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                 <Search className="h-5 w-5 text-gray-600" />
               </button>
 
-              {/* Favorites button */}
+              {/* Carts button */}
               <button 
                 className="p-2 hover:bg-gray-100 rounded-lg relative group"
                 onClick={() => {
@@ -115,11 +118,11 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                     navigate('/auth/user');
                     return;
                   }
-                  setIsFavoritesOpen(true);
+                  setIsCartsOpen(true);
                 }}
               >
-                <Heart className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
-                {isAuthenticated && favorites.length > 0 && (
+                <ShoppingCart className="h-5 w-5 text-gray-600 group-hover:text-blue-600 transition-colors" />
+                {isAuthenticated && carts.length > 0 && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
                 )}
               </button>
@@ -187,7 +190,7 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                           Inbox
                         </button>
                         <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                          <Heart className="mr-3 h-4 w-4" />
+                          <ShoppingCart className="mr-3 h-4 w-4" />
                           Wishlist
                         </button>
                       </div>
@@ -253,9 +256,9 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
               <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
                 Categories
               </a>
-              <a href="#" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">
-                Deals
-              </a>
+              {user && ( // show on logged in only
+                  <a href="/inbox" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100">Inbox</a>
+              )}
               <a 
                 href={user?.is_seller ? "/dashboard" : "/enroll_seller"}
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
@@ -283,19 +286,19 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
                         Profile
                       </a>
 
-                      {/* Favorites button */}
+                      {/* Carts button */}
                       <button 
                         onClick={() => {
                           setIsMobileSidebarOpen(false);
-                          setIsFavoritesOpen(true);
+                          setIsCartsOpen(true);
                         }}
                         className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
                       >
-                        <Heart className="mr-3 h-4 w-4" />
-                        Favorites
-                        {favorites.length > 0 && (
+                        <ShoppingCart className="mr-3 h-4 w-4" />
+                        Cart
+                        {carts.length > 0 && (
                           <span className="ml-auto bg-blue-100 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full">
-                            {favorites.length}
+                            {carts.length}
                           </span>
                         )}
                       </button>
@@ -353,10 +356,10 @@ const NavBar = ({ auth: { isAuthenticated, user }, logout }) => {
       </aside>
 
       {/* Panels */}
-      <FavoritesPanel
-        isOpen={isFavoritesOpen}
-        onClose={() => setIsFavoritesOpen(false)}
-        favorites={favorites}
+      <CartsPanel
+        isOpen={isCartsOpen}
+        onClose={() => setIsCartsOpen(false)}
+        carts={carts}
       />
       
       <NotificationsPanel
